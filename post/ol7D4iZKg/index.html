@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" >
 
-<title>Hello Gridea | A Blog of Miaite</title>
+<title>Effective C++笔记（02） | A Blog of Miaite</title>
 <meta name="description" content="一些杂物，技术笔记为主">
 
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
@@ -81,45 +81,69 @@
       <div class="sm-12 md-8 col">
         <div class="paper">
           <article class="article">
-            <h1>Hello Gridea</h1>
+            <h1>Effective C++笔记（02）</h1>
             <p class="article-meta">
-              2018-12-12
+              2020-11-05
               
-                <a href="https://Miaite.github.io/tag/HaEZyLLwe/" class="badge success">
-                  Gridea
+                <a href="https://Miaite.github.io/tag/U4pTdc1co/" class="badge secondary">
+                  C++从入门到入坟
                 </a>
               
             </p>
             
-              <img src="https://Miaite.github.io/post-images/hello-gridea.png" alt="Hello Gridea">
+              <img src="https://img3.doubanio.com/view/subject/l/public/s4647091.jpg" alt="Effective C++笔记（02）">
             
             <div class="post-content">
-              <p>👏  欢迎使用 <strong>Gridea</strong> ！<br>
-✍️  <strong>Gridea</strong> 一个静态博客写作客户端。你可以用它来记录你的生活、心情、知识、笔记、创意... ...</p>
+              <p>本篇笔记包含 Term 05~12。</p>
 <!-- more -->
-<p><a href="https://github.com/getgridea/gridea">Github</a><br>
-<a href="https://gridea.dev/">Gridea 主页</a><br>
-<a href="http://fehey.com/">示例网站</a></p>
-<h2 id="特性">特性👇</h2>
-<p>📝  你可以使用最酷的 <strong>Markdown</strong> 语法，进行快速创作</p>
-<p>🌉  你可以给文章配上精美的封面图和在文章任意位置插入图片</p>
-<p>🏷️  你可以对文章进行标签分组</p>
-<p>📋  你可以自定义菜单，甚至可以创建外部链接菜单</p>
-<p>💻  你可以在 <strong>Windows</strong>，<strong>MacOS</strong> 或 <strong>Linux</strong> 设备上使用此客户端</p>
-<p>🌎  你可以使用 <strong>𝖦𝗂𝗍𝗁𝗎𝖻 𝖯𝖺𝗀𝖾𝗌</strong> 或 <strong>Coding Pages</strong> 向世界展示，未来将支持更多平台</p>
-<p>💬  你可以进行简单的配置，接入 <a href="https://github.com/gitalk/gitalk">Gitalk</a> 或 <a href="https://github.com/SukkaW/DisqusJS">DisqusJS</a> 评论系统</p>
-<p>🇬🇧  你可以使用<strong>中文简体</strong>或<strong>英语</strong></p>
-<p>🌁  你可以任意使用应用内默认主题或任意第三方主题，强大的主题自定义能力</p>
-<p>🖥  你可以自定义源文件夹，利用 OneDrive、百度网盘、iCloud、Dropbox 等进行多设备同步</p>
-<p>🌱 当然 <strong>Gridea</strong> 还很年轻，有很多不足，但请相信，它会不停向前 🏃</p>
-<p>未来，它一定会成为你离不开的伙伴</p>
-<p>尽情发挥你的才华吧！</p>
-<p>😘 Enjoy~</p>
+<h2 id="term-05了解-c-默默编写并调用了哪些函数">Term 05：了解 C++ 默默编写并调用了哪些函数</h2>
+<p>编译器会为 class 创建 default 构造函数、copy 构造函数、copy assignment 操作符以及析构函数，它们都是 public 以及 inline 的。注意到，当 copy assignment 操作符在父类中被声明为 private 或者含有 const 成员面对等情况，编译器不会自动创建 copy assignment 操作符；编译器自动创建的析构函数不是虚函数，除非继承自虚函数。</p>
+<h2 id="term-06若不想使用编译器自动生成的函数就应该明确拒绝">Term 06：若不想使用编译器自动生成的函数，就应该明确拒绝</h2>
+<p>通过 Term 05 我们知道编译器会自动生成一些成员函数，但有时我们可能不需要这种功能。解决方法：</p>
+<ol>
+<li>将该成员函数声明为 private 并且不予实现</li>
+<li>按照 1. 构建一个基类，然后去继承它</li>
+<li>使用 C++(11) 提供的 <code>=default</code> 和 <code>=delete</code> 显示启用或者禁用编译器自动版本的函数</li>
+</ol>
+<h2 id="term-07为多态基类声明-virtual-析构函数">Term 07：为多态基类声明 virtual 析构函数</h2>
+<ol>
+<li>用作多态的基类应该声明 virtual 析构函数。如果 class 带有 virtual 成员函数，应该声明 virtual 析构函数</li>
+<li>不是基类或者不是用作多态的基类，不应该声明 virtual 析构函数，比如 STL 容器</li>
+<li>以上两点可以避免内存泄漏</li>
+</ol>
+<h2 id="term-08别让异常逃离析构函数">Term 08：别让异常逃离析构函数</h2>
+<p>不应该在析构函数内抛出异常，保证析构函数能执行。将可能造成异常的部分移到另一个函数内或者交给用户自己处理。</p>
+<h2 id="term-09绝不在构造和析构过程中调用-virtual-函数">Term 09：绝不在构造和析构过程中调用 virtual 函数</h2>
+<p>如果在 base class 构造和析构过程中调用 virtual 函数，该函数的版本是 base class 对应的版本，不会是意图的 derived class 版本。</p>
+<h2 id="term-10令-operator-返回一个-reference-to-this">Term 10：令 operator= 返回一个 reference to *this</h2>
+<p>可以实现右结合的连锁赋值，大家都这么做，一种习惯性接口。</p>
+<h2 id="term-11在-operator-中处理自我赋值">Term 11：在 operator= 中处理“自我赋值”</h2>
+<ol>
+<li>如果将一个对象赋值给自身，会造成安全问题。处理方法可以是：通过地址判断是否是同一对象；安排安全的语句顺序；copy-and-swap</li>
+<li>任何函数，如果操作多个对象，要考虑其中 某些对象其实是同一个这种情况</li>
+</ol>
+<h2 id="term-12复制对象时勿忘每一个成分">Term 12：复制对象时勿忘每一个成分</h2>
+<ol>
+<li>copy 构造函数和 copy 赋值操作符会执行拷贝</li>
+<li>拷贝对象时应该把每个成员变量都考虑到，并且调用对应的 base class 的函数</li>
+<li>copy 构造函数和 copy 赋值操作符之间<strong>不能</strong>互相调用，可以考虑新创建一个成员函数维护冗余代码，然后再 copy 操作时调用</li>
+</ol>
 
             </div>
           </article>
         </div>
         <div class="paper" data-aos="fade-in">
+          
+            <div class="next-post">
+              <div class="next">
+                下一篇
+              </div>
+              <a href="https://Miaite.github.io/post/UyR9S6D5b/">
+                <h3 class="post-title">
+                  Effective C++笔记（01）
+                </h3>
+              </a>
+            </div>
           
         </div>
         

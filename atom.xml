@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://Miaite.github.io</id>
     <title>A Blog of Miaite</title>
-    <updated>2020-11-03T12:21:28.379Z</updated>
+    <updated>2020-11-05T12:05:07.075Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://Miaite.github.io"/>
     <link rel="self" href="https://Miaite.github.io/atom.xml"/>
@@ -11,14 +11,58 @@
     <icon>https://Miaite.github.io/favicon.ico</icon>
     <rights>All rights reserved 2020, A Blog of Miaite</rights>
     <entry>
+        <title type="html"><![CDATA[Effective C++笔记（02）]]></title>
+        <id>https://Miaite.github.io/post/ol7D4iZKg/</id>
+        <link href="https://Miaite.github.io/post/ol7D4iZKg/">
+        </link>
+        <updated>2020-11-05T11:45:07.000Z</updated>
+        <summary type="html"><![CDATA[<p>本篇笔记包含 Term 05~12。</p>
+]]></summary>
+        <content type="html"><![CDATA[<p>本篇笔记包含 Term 05~12。</p>
+<!-- more -->
+<h2 id="term-05了解-c-默默编写并调用了哪些函数">Term 05：了解 C++ 默默编写并调用了哪些函数</h2>
+<p>编译器会为 class 创建 default 构造函数、copy 构造函数、copy assignment 操作符以及析构函数，它们都是 public 以及 inline 的。注意到，当 copy assignment 操作符在父类中被声明为 private 或者含有 const 成员面对等情况，编译器不会自动创建 copy assignment 操作符；编译器自动创建的析构函数不是虚函数，除非继承自虚函数。</p>
+<h2 id="term-06若不想使用编译器自动生成的函数就应该明确拒绝">Term 06：若不想使用编译器自动生成的函数，就应该明确拒绝</h2>
+<p>通过 Term 05 我们知道编译器会自动生成一些成员函数，但有时我们可能不需要这种功能。解决方法：</p>
+<ol>
+<li>将该成员函数声明为 private 并且不予实现</li>
+<li>按照 1. 构建一个基类，然后去继承它</li>
+<li>使用 C++(11) 提供的 <code>=default</code> 和 <code>=delete</code> 显示启用或者禁用编译器自动版本的函数</li>
+</ol>
+<h2 id="term-07为多态基类声明-virtual-析构函数">Term 07：为多态基类声明 virtual 析构函数</h2>
+<ol>
+<li>用作多态的基类应该声明 virtual 析构函数。如果 class 带有 virtual 成员函数，应该声明 virtual 析构函数</li>
+<li>不是基类或者不是用作多态的基类，不应该声明 virtual 析构函数，比如 STL 容器</li>
+<li>以上两点可以避免内存泄漏</li>
+</ol>
+<h2 id="term-08别让异常逃离析构函数">Term 08：别让异常逃离析构函数</h2>
+<p>不应该在析构函数内抛出异常，保证析构函数能执行。将可能造成异常的部分移到另一个函数内或者交给用户自己处理。</p>
+<h2 id="term-09绝不在构造和析构过程中调用-virtual-函数">Term 09：绝不在构造和析构过程中调用 virtual 函数</h2>
+<p>如果在 base class 构造和析构过程中调用 virtual 函数，该函数的版本是 base class 对应的版本，不会是意图的 derived class 版本。</p>
+<h2 id="term-10令-operator-返回一个-reference-to-this">Term 10：令 operator= 返回一个 reference to *this</h2>
+<p>可以实现右结合的连锁赋值，大家都这么做，一种习惯性接口。</p>
+<h2 id="term-11在-operator-中处理自我赋值">Term 11：在 operator= 中处理“自我赋值”</h2>
+<ol>
+<li>如果将一个对象赋值给自身，会造成安全问题。处理方法可以是：通过地址判断是否是同一对象；安排安全的语句顺序；copy-and-swap</li>
+<li>任何函数，如果操作多个对象，要考虑其中 某些对象其实是同一个这种情况</li>
+</ol>
+<h2 id="term-12复制对象时勿忘每一个成分">Term 12：复制对象时勿忘每一个成分</h2>
+<ol>
+<li>copy 构造函数和 copy 赋值操作符会执行拷贝</li>
+<li>拷贝对象时应该把每个成员变量都考虑到，并且调用对应的 base class 的函数</li>
+<li>copy 构造函数和 copy 赋值操作符之间<strong>不能</strong>互相调用，可以考虑新创建一个成员函数维护冗余代码，然后再 copy 操作时调用</li>
+</ol>
+]]></content>
+    </entry>
+    <entry>
         <title type="html"><![CDATA[Effective C++笔记（01）]]></title>
         <id>https://Miaite.github.io/post/UyR9S6D5b/</id>
         <link href="https://Miaite.github.io/post/UyR9S6D5b/">
         </link>
         <updated>2020-11-03T11:22:15.000Z</updated>
-        <summary type="html"><![CDATA[<p>就学习难度而言，C++是一门臭名昭著的编程语言。《Effective C++》总结了 55 条 C++(98/03)的开发准则，供开发者学习参考。本篇笔记包含 Term 1~4。</p>
+        <summary type="html"><![CDATA[<p>就学习难度而言，C++是一门臭名昭著的编程语言。《Effective C++》总结了 55 条 C++(98/03)的开发准则，供开发者学习参考。本篇笔记包含 Term 01~04。</p>
 ]]></summary>
-        <content type="html"><![CDATA[<p>就学习难度而言，C++是一门臭名昭著的编程语言。《Effective C++》总结了 55 条 C++(98/03)的开发准则，供开发者学习参考。本篇笔记包含 Term 1~4。</p>
+        <content type="html"><![CDATA[<p>就学习难度而言，C++是一门臭名昭著的编程语言。《Effective C++》总结了 55 条 C++(98/03)的开发准则，供开发者学习参考。本篇笔记包含 Term 01~04。</p>
 <!-- more -->
 <h2 id="term-01视-c-为一个语言联邦">Term 01：视 C++ 为一个语言联邦</h2>
 <p>这一点说起来容易（做起来难）。简单讲，C++ 的语言设计其实有四个部分 ：（兼容）C、面向对象、泛型和模板、STL，这四个部分相互关联却又在设计思想上相对独立。每一个部分都会有一些不同的准则，在 C 中的常用思路不一定适合在泛型和模板中使用。</p>
