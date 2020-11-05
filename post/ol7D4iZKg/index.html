@@ -7,7 +7,7 @@
 <meta name="description" content="一些杂物，技术笔记为主">
 
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-<link rel="shortcut icon" href="https://Miaite.github.io/favicon.ico?v=1604577890355">
+<link rel="shortcut icon" href="https://Miaite.github.io/favicon.ico?v=1604578113954">
 
 <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
 <link rel="stylesheet" href="https://unpkg.com/papercss@1.6.1/dist/paper.min.css" />
@@ -103,7 +103,7 @@
 <ol>
 <li>将该成员函数声明为 private 并且不予实现</li>
 <li>按照 1. 构建一个基类，然后去继承它</li>
-<li>使用 C++(11) 提供的 <code>=default</code> 和 <code>=delete</code> 显示启用或者禁用编译器自动版本的函数</li>
+<li>使用 C++(11) 提供的 <code>=default</code> 和 <code>=delete</code> 显式启用或者禁用编译器自动版本的函数</li>
 </ol>
 <h2 id="term-07为多态基类声明-virtual-析构函数">Term 07：为多态基类声明 virtual 析构函数</h2>
 <ol>
@@ -120,13 +120,13 @@
 <h2 id="term-11在-operator-中处理自我赋值">Term 11：在 operator= 中处理“自我赋值”</h2>
 <ol>
 <li>如果将一个对象赋值给自身，会造成安全问题。处理方法可以是：通过地址判断是否是同一对象；安排安全的语句顺序；copy-and-swap</li>
-<li>任何函数，如果操作多个对象，要考虑其中 某些对象其实是同一个这种情况</li>
+<li>任何函数，如果操作多个对象，要考虑其中某些对象其实是同一个这种情况</li>
 </ol>
 <h2 id="term-12复制对象时勿忘每一个成分">Term 12：复制对象时勿忘每一个成分</h2>
 <ol>
 <li>copy 构造函数和 copy 赋值操作符会执行拷贝</li>
 <li>拷贝对象时应该把每个成员变量都考虑到，并且调用对应的 base class 的函数</li>
-<li>copy 构造函数和 copy 赋值操作符之间<strong>不能</strong>互相调用，可以考虑新创建一个成员函数维护冗余代码，然后再 copy 操作时调用</li>
+<li>copy 构造函数和 copy 赋值操作符之间<strong>不能</strong>互相调用，可以考虑新创建一个成员函数维护冗余代码，然后在 copy 操作时调用</li>
 </ol>
 
             </div>
@@ -151,7 +151,7 @@
 
       <div class="sm-12 md-4 col sidebar">
   <div class="paper info-container">
-    <img src="https://Miaite.github.io/images/avatar.png?v=1604577890355" class="no-responsive avatar">
+    <img src="https://Miaite.github.io/images/avatar.png?v=1604578113954" class="no-responsive avatar">
     <div class="text-muted">一些杂物，技术笔记为主</div>
     <div class="social-container">
       
@@ -211,7 +211,7 @@
     </div>
     <div class="row">
       
-        <a href="https://Miaite.github.io/tag/U4pTdc1co/" class="badge secondary">
+        <a href="https://Miaite.github.io/tag/U4pTdc1co/" class="badge ">
           C++从入门到入坟
         </a>
       
