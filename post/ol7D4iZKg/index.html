@@ -3,11 +3,11 @@
   <head>
     <meta charset="utf-8" >
 
-<title>Effective C++笔记（02） | A Blog of Miaite</title>
+<title>Effective C++ 笔记（02） | A Blog of Miaite</title>
 <meta name="description" content="一些杂物，技术笔记为主">
 
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-<link rel="shortcut icon" href="https://Miaite.github.io/favicon.ico?v=1604578113954">
+<link rel="shortcut icon" href="https://Miaite.github.io/favicon.ico?v=1604646258961">
 
 <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
 <link rel="stylesheet" href="https://unpkg.com/papercss@1.6.1/dist/paper.min.css" />
@@ -81,17 +81,17 @@
       <div class="sm-12 md-8 col">
         <div class="paper">
           <article class="article">
-            <h1>Effective C++笔记（02）</h1>
+            <h1>Effective C++ 笔记（02）</h1>
             <p class="article-meta">
               2020-11-05
               
-                <a href="https://Miaite.github.io/tag/U4pTdc1co/" class="badge secondary">
+                <a href="https://Miaite.github.io/tag/U4pTdc1co/" class="badge ">
                   C++从入门到入坟
                 </a>
               
             </p>
             
-              <img src="https://img3.doubanio.com/view/subject/l/public/s4647091.jpg" alt="Effective C++笔记（02）">
+              <img src="https://img3.doubanio.com/view/subject/l/public/s4647091.jpg" alt="Effective C++ 笔记（02）">
             
             <div class="post-content">
               <p>本篇笔记包含 Term 05~12。</p>
@@ -112,7 +112,7 @@
 <li>以上两点可以避免内存泄漏</li>
 </ol>
 <h2 id="term-08别让异常逃离析构函数">Term 08：别让异常逃离析构函数</h2>
-<p>不应该在析构函数内抛出异常，保证析构函数能执行。将可能造成异常的部分移到另一个函数内或者交给用户自己处理。</p>
+<p>不应该在析构函数内抛出异常，保证析构函数能执行。将可能造成异常的部分移到另一个函数内或者交给用户自己处理。在 C++(11) 中，可以使用 <code>noexcept</code> 来限制函数，如果出现异常会直接终止程序。</p>
 <h2 id="term-09绝不在构造和析构过程中调用-virtual-函数">Term 09：绝不在构造和析构过程中调用 virtual 函数</h2>
 <p>如果在 base class 构造和析构过程中调用 virtual 函数，该函数的版本是 base class 对应的版本，不会是意图的 derived class 版本。</p>
 <h2 id="term-10令-operator-返回一个-reference-to-this">Term 10：令 operator= 返回一个 reference to *this</h2>
@@ -140,7 +140,7 @@
               </div>
               <a href="https://Miaite.github.io/post/UyR9S6D5b/">
                 <h3 class="post-title">
-                  Effective C++笔记（01）
+                  Effective C++ 笔记（01）
                 </h3>
               </a>
             </div>
@@ -151,7 +151,7 @@
 
       <div class="sm-12 md-4 col sidebar">
   <div class="paper info-container">
-    <img src="https://Miaite.github.io/images/avatar.png?v=1604578113954" class="no-responsive avatar">
+    <img src="https://Miaite.github.io/images/avatar.png?v=1604646258961" class="no-responsive avatar">
     <div class="text-muted">一些杂物，技术笔记为主</div>
     <div class="social-container">
       
@@ -180,13 +180,13 @@
         
           
             <li>
-              <a href="https://Miaite.github.io/post/ol7D4iZKg/">Effective C++笔记（02）</a>
+              <a href="https://Miaite.github.io/post/ol7D4iZKg/">Effective C++ 笔记（02）</a>
             </li>
           
         
           
             <li>
-              <a href="https://Miaite.github.io/post/UyR9S6D5b/">Effective C++笔记（01）</a>
+              <a href="https://Miaite.github.io/post/UyR9S6D5b/">Effective C++ 笔记（01）</a>
             </li>
           
         

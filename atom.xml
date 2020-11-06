@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://Miaite.github.io</id>
     <title>A Blog of Miaite</title>
-    <updated>2020-11-05T12:08:37.475Z</updated>
+    <updated>2020-11-06T07:04:58.364Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://Miaite.github.io"/>
     <link rel="self" href="https://Miaite.github.io/atom.xml"/>
@@ -11,7 +11,7 @@
     <icon>https://Miaite.github.io/favicon.ico</icon>
     <rights>All rights reserved 2020, A Blog of Miaite</rights>
     <entry>
-        <title type="html"><![CDATA[Effective C++笔记（02）]]></title>
+        <title type="html"><![CDATA[Effective C++ 笔记（02）]]></title>
         <id>https://Miaite.github.io/post/ol7D4iZKg/</id>
         <link href="https://Miaite.github.io/post/ol7D4iZKg/">
         </link>
@@ -36,7 +36,7 @@
 <li>以上两点可以避免内存泄漏</li>
 </ol>
 <h2 id="term-08别让异常逃离析构函数">Term 08：别让异常逃离析构函数</h2>
-<p>不应该在析构函数内抛出异常，保证析构函数能执行。将可能造成异常的部分移到另一个函数内或者交给用户自己处理。</p>
+<p>不应该在析构函数内抛出异常，保证析构函数能执行。将可能造成异常的部分移到另一个函数内或者交给用户自己处理。在 C++(11) 中，可以使用 <code>noexcept</code> 来限制函数，如果出现异常会直接终止程序。</p>
 <h2 id="term-09绝不在构造和析构过程中调用-virtual-函数">Term 09：绝不在构造和析构过程中调用 virtual 函数</h2>
 <p>如果在 base class 构造和析构过程中调用 virtual 函数，该函数的版本是 base class 对应的版本，不会是意图的 derived class 版本。</p>
 <h2 id="term-10令-operator-返回一个-reference-to-this">Term 10：令 operator= 返回一个 reference to *this</h2>
@@ -55,7 +55,7 @@
 ]]></content>
     </entry>
     <entry>
-        <title type="html"><![CDATA[Effective C++笔记（01）]]></title>
+        <title type="html"><![CDATA[Effective C++ 笔记（01）]]></title>
         <id>https://Miaite.github.io/post/UyR9S6D5b/</id>
         <link href="https://Miaite.github.io/post/UyR9S6D5b/">
         </link>
@@ -72,7 +72,7 @@
 <li>对于常量，使用 const 或者 enum hack 代替</li>
 <li>对于形似函数的宏定义，使用 inline 函数代替（可能会用到模板）</li>
 </ol>
-<pre><code>enum hack 的例子：
+<pre><code>// enum hack 的例子：
 class Game {
     private:
         static const int GameTurn = 10;
@@ -81,9 +81,7 @@ class Game {
 class GamePlayer{
     private:
         enum {NumTurns = 5};
-
         int scores[NumTurns];
-        ...
 };    //不支持类内初始化的编译器也能编译通过
 </code></pre>
 <h2 id="term-03尽可能使用-const">Term 03：尽可能使用 const</h2>
