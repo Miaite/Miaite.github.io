@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" >
 
-<title>标签列表 | A Blog of Miaite</title>
+<title>Effective C++ 笔记（03） | A Blog of Miaite</title>
 <meta name="description" content="一些流水账，技术笔记为主">
 
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
@@ -23,6 +23,7 @@
 
   </head>
   <body>
+  
     <nav class="navbar border fixed split-nav">
   <div class="nav-brand">
     <h3><a href="https://Miaite.github.io">A Blog of Miaite</a></h3>
@@ -79,16 +80,73 @@
     <div id="top" class="row site">
       <div class="sm-12 md-8 col">
         <div class="paper">
-          <h2 class="tag-list-title">标签列表</h2>
-          <div class="row tags-container">
+          <article class="article">
+            <h1>Effective C++ 笔记（03）</h1>
+            <p class="article-meta">
+              2020-11-07
+              
+                <a href="https://Miaite.github.io/tag/U4pTdc1co/" class="badge success">
+                  C++从入门到入坟
+                </a>
+              
+            </p>
             
-              <a href="https://Miaite.github.io/tag/U4pTdc1co/" class="badge secondary">
-                C++从入门到入坟
-              </a>
+              <img src="https://img3.doubanio.com/view/subject/l/public/s4647091.jpg" alt="Effective C++ 笔记（03）">
             
-          </div>
+            <div class="post-content">
+              <p>本篇笔记包含 Term 13~17。</p>
+<!-- more -->
+<h2 id="term-13以对象管理资源">Term 13：以对象管理资源</h2>
+<p>编写 C++ 程序容易遇到的一个问题就是内存泄漏，手动 <code>delete</code> 容易遇到各种问题。一个较好的解决方案是使用类来管理资源，通过析构过程保证资源的正确释放。</p>
+<ol>
+<li>使用 RAII 对象，在其构造函数中获取资源，析构函数中释放资源</li>
+<li>常用的 RAII 对象，智能指针，shared_ptr 和 unique_ptr</li>
+</ol>
+<h2 id="term-14在资源管理类中小心-copying-行为">Term 14：在资源管理类中小心 copying 行为</h2>
+<p>可选的策略有：</p>
+<ol>
+<li>禁止复制</li>
+<li>引用计数</li>
+<li>深拷贝</li>
+<li>转移所有权（auto_ptr 那样的行为）</li>
+</ol>
+<h2 id="term-15在资源管理类中提供对原始资源的访问">Term 15：在资源管理类中提供对原始资源的访问</h2>
+<p>RAII class 应当提供一个直接获取到原始资源（指针/引用）的方法。一般来说，显示转换比较安全，隐式转换比较方便。</p>
+<h2 id="term-16成对使用-new-和-delete-时要采取相同形式">Term 16：成对使用 new 和 delete 时要采取相同形式</h2>
+<p>如果在 <code>new</code> 时使用了 <code>[]</code>，那么在 <code>delete</code> 时也应使用 <code>[]</code>，未使用 <code>[]</code> 时同样要准寻这个原则，以避免释放资源出错。</p>
+<h2 id="term-17以独立语句将-newed-对象置入智能指针">Term 17：以独立语句将 newed 对象置入智能指针</h2>
+<p>要以独立语句将 newed 对象置入智能指针，否则可能发生难以察觉的资源泄漏</p>
+<pre><code>// 首先有以下定义
+int priority();
+void processWidget(std::tr1::shared_ptr&lt;Widget&gt; pw, int priority);
+// 几种调用
+processWidget(new Widget, priority());    // 出错，shared_ptr 无法隐式转换
+processWidget(std::tr1::shared_ptr&lt;Widget&gt; (new Widget), priority());    // 虽然可以通过编译，但是假如 priority() 先于 shared_ptr 的构造函数执行且出现异常，则资源泄漏
+// 下面时正确做法
+std::tr1::shared_ptr&lt;Widget&gt; pw(new Widget);
+processWidget(pw, priority());
+</code></pre>
+
+            </div>
+          </article>
         </div>
+        <div class="paper" data-aos="fade-in">
+          
+            <div class="next-post">
+              <div class="next">
+                下一篇
+              </div>
+              <a href="https://Miaite.github.io/post/ol7D4iZKg/">
+                <h3 class="post-title">
+                  Effective C++ 笔记（02）
+                </h3>
+              </a>
+            </div>
+          
+        </div>
+        
       </div>
+
       <div class="sm-12 md-4 col sidebar">
   <div class="paper info-container">
     <img src="https://Miaite.github.io/images/avatar.png?v=1604737053917" class="no-responsive avatar">
@@ -157,7 +215,7 @@
     </div>
     <div class="row">
       
-        <a href="https://Miaite.github.io/tag/U4pTdc1co/" class="badge ">
+        <a href="https://Miaite.github.io/tag/U4pTdc1co/" class="badge success">
           C++从入门到入坟
         </a>
       
@@ -167,7 +225,8 @@
     Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | <a class="rss" href="https://Miaite.github.io/atom.xml" target="_blank">RSS</a>
   </div>
 </div>
-  
+
+
     </div>
 
     <script src="https://unpkg.com/aos@next/dist/aos.js"></script>

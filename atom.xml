@@ -2,14 +2,56 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://Miaite.github.io</id>
     <title>A Blog of Miaite</title>
-    <updated>2020-11-06T07:04:58.364Z</updated>
+    <updated>2020-11-07T08:17:36.256Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://Miaite.github.io"/>
     <link rel="self" href="https://Miaite.github.io/atom.xml"/>
-    <subtitle>一些杂物，技术笔记为主</subtitle>
+    <subtitle>一些流水账，技术笔记为主</subtitle>
     <logo>https://Miaite.github.io/images/avatar.png</logo>
     <icon>https://Miaite.github.io/favicon.ico</icon>
     <rights>All rights reserved 2020, A Blog of Miaite</rights>
+    <entry>
+        <title type="html"><![CDATA[Effective C++ 笔记（03）]]></title>
+        <id>https://Miaite.github.io/post/386I6Xacv/</id>
+        <link href="https://Miaite.github.io/post/386I6Xacv/">
+        </link>
+        <updated>2020-11-07T07:42:41.000Z</updated>
+        <summary type="html"><![CDATA[<p>本篇笔记包含 Term 13~17。</p>
+]]></summary>
+        <content type="html"><![CDATA[<p>本篇笔记包含 Term 13~17。</p>
+<!-- more -->
+<h2 id="term-13以对象管理资源">Term 13：以对象管理资源</h2>
+<p>编写 C++ 程序容易遇到的一个问题就是内存泄漏，手动 <code>delete</code> 容易遇到各种问题。一个较好的解决方案是使用类来管理资源，通过析构过程保证资源的正确释放。</p>
+<ol>
+<li>使用 RAII 对象，在其构造函数中获取资源，析构函数中释放资源</li>
+<li>常用的 RAII 对象，智能指针，shared_ptr 和 unique_ptr</li>
+</ol>
+<h2 id="term-14在资源管理类中小心-copying-行为">Term 14：在资源管理类中小心 copying 行为</h2>
+<p>可选的策略有：</p>
+<ol>
+<li>禁止复制</li>
+<li>引用计数</li>
+<li>深拷贝</li>
+<li>转移所有权（auto_ptr 那样的行为）</li>
+</ol>
+<h2 id="term-15在资源管理类中提供对原始资源的访问">Term 15：在资源管理类中提供对原始资源的访问</h2>
+<p>RAII class 应当提供一个直接获取到原始资源（指针/引用）的方法。一般来说，显示转换比较安全，隐式转换比较方便。</p>
+<h2 id="term-16成对使用-new-和-delete-时要采取相同形式">Term 16：成对使用 new 和 delete 时要采取相同形式</h2>
+<p>如果在 <code>new</code> 时使用了 <code>[]</code>，那么在 <code>delete</code> 时也应使用 <code>[]</code>，未使用 <code>[]</code> 时同样要准寻这个原则，以避免释放资源出错。</p>
+<h2 id="term-17以独立语句将-newed-对象置入智能指针">Term 17：以独立语句将 newed 对象置入智能指针</h2>
+<p>要以独立语句将 newed 对象置入智能指针，否则可能发生难以察觉的资源泄漏</p>
+<pre><code>// 首先有以下定义
+int priority();
+void processWidget(std::tr1::shared_ptr&lt;Widget&gt; pw, int priority);
+// 几种调用
+processWidget(new Widget, priority());    // 出错，shared_ptr 无法隐式转换
+processWidget(std::tr1::shared_ptr&lt;Widget&gt; (new Widget), priority());    // 虽然可以通过编译，但是假如 priority() 先于 shared_ptr 的构造函数执行且出现异常，则资源泄漏
+// 下面时正确做法
+std::tr1::shared_ptr&lt;Widget&gt; pw(new Widget);
+processWidget(pw, priority());
+</code></pre>
+]]></content>
+    </entry>
     <entry>
         <title type="html"><![CDATA[Effective C++ 笔记（02）]]></title>
         <id>https://Miaite.github.io/post/ol7D4iZKg/</id>
@@ -60,9 +102,9 @@
         <link href="https://Miaite.github.io/post/UyR9S6D5b/">
         </link>
         <updated>2020-11-03T11:22:15.000Z</updated>
-        <summary type="html"><![CDATA[<p>就学习难度而言，C++是一门臭名昭著的编程语言。《Effective C++》总结了 55 条 C++(98/03)的开发准则，供开发者学习参考。本篇笔记包含 Term 01~04。</p>
+        <summary type="html"><![CDATA[<p>就学习难度而言，C++是一门臭名昭著的编程语言。《Effective C++》总结了 55 条 C++(98/03)的开发准则，供开发者学习参考。本篇笔记包含 Term 01~04，我也依据 Modern C++ 的改变，对其中某些细节进行了修订。</p>
 ]]></summary>
-        <content type="html"><![CDATA[<p>就学习难度而言，C++是一门臭名昭著的编程语言。《Effective C++》总结了 55 条 C++(98/03)的开发准则，供开发者学习参考。本篇笔记包含 Term 01~04。</p>
+        <content type="html"><![CDATA[<p>就学习难度而言，C++是一门臭名昭著的编程语言。《Effective C++》总结了 55 条 C++(98/03)的开发准则，供开发者学习参考。本篇笔记包含 Term 01~04，我也依据 Modern C++ 的改变，对其中某些细节进行了修订。</p>
 <!-- more -->
 <h2 id="term-01视-c-为一个语言联邦">Term 01：视 C++ 为一个语言联邦</h2>
 <p>这一点说起来容易（做起来难）。简单讲，C++ 的语言设计其实有四个部分 ：（兼容）C、面向对象、泛型和模板、STL，这四个部分相互关联却又在设计思想上相对独立。每一个部分都会有一些不同的准则，在 C 中的常用思路不一定适合在泛型和模板中使用。</p>
