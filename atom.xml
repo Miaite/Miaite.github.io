@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://Miaite.github.io</id>
     <title>A Blog of Miaite</title>
-    <updated>2020-11-07T08:17:36.256Z</updated>
+    <updated>2020-11-12T06:09:53.186Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://Miaite.github.io"/>
     <link rel="self" href="https://Miaite.github.io/atom.xml"/>
@@ -10,6 +10,106 @@
     <logo>https://Miaite.github.io/images/avatar.png</logo>
     <icon>https://Miaite.github.io/favicon.ico</icon>
     <rights>All rights reserved 2020, A Blog of Miaite</rights>
+    <entry>
+        <title type="html"><![CDATA[Effective C++ 笔记（05）]]></title>
+        <id>https://Miaite.github.io/post/Lxmd6dG5E/</id>
+        <link href="https://Miaite.github.io/post/Lxmd6dG5E/">
+        </link>
+        <updated>2020-11-11T11:48:56.000Z</updated>
+        <summary type="html"><![CDATA[<p>本篇笔记包含 Term 26~31。</p>
+]]></summary>
+        <content type="html"><![CDATA[<p>本篇笔记包含 Term 26~31。</p>
+<!-- more -->
+<h2 id="term-26尽可能延后变量定义式出现时间">Term 26：尽可能延后变量定义式出现时间</h2>
+<p>定义一个变量（或者对象）对调用其构造函数，因此最好时在需要的时刻才去定义并初始化。至于只在循环内使用的变量通常定义在<strong>循环内</strong>，除非明确知道赋值比构造+析构更加高效而且确实有必要时，才将其定义在循环外。</p>
+<h2 id="term-27尽量少做转型动作">Term 27：尽量少做转型动作</h2>
+<ol>
+<li>如果可以，尽量避免转型，特别是避免低效的 dynamic_casts，优先尝试其它的解决方案</li>
+<li>如果转型是必要的，试着将它隐藏与函数之中</li>
+<li>不要使用 C 风格的转型</li>
+</ol>
+<h2 id="term-28避免返回-handles-指向对象内部成分">Term 28：避免返回 handles 指向对象内部成分</h2>
+<p>避免返回 handles（包括指针、引用、迭代器）指向对象内部成分。这样可以增加封装性，并且避免 handle 在对象被销毁后指向空。</p>
+<h2 id="term-29为异常安全而努力是值得的">Term 29：为“异常安全”而努力是值得的</h2>
+<ol>
+<li>异常安全函数即使发生异常也不会泄漏资源或允许任何数据结构破坏</li>
+<li>异常安全函数三种保证：基本型（保证程序有效）、强烈型（保证程序回到之前的状态）、不抛异常型</li>
+<li>强烈保证往往能够以 copy-and-swap 实现出来，但强烈保证并非对所有函数都可以实现或具备现实意义</li>
+<li>函数提供的异常安全保证通常等于其所调用的函数中异常安全保证最弱的那个（木桶效应）</li>
+</ol>
+<h2 id="term-30透彻了解-inlining-的里里外外">Term 30：透彻了解 inlining 的里里外外</h2>
+<p>inline 是编译器可选的操作，实际取决于具体编译器的平台和版本等。</p>
+<ol>
+<li>定义于 class 内的函数是一种隐式 inline 请求</li>
+<li>inline 应当用于小型的、调用频繁的函数，避免代码膨胀，使调试和程序升级的过程也变得更加容易</li>
+</ol>
+<h2 id="term-31将文件间的编译依存关系降至最低">Term 31：将文件间的编译依存关系降至最低</h2>
+<p>降低文件间的编译依存关系有助于减少编译的工作量</p>
+<ol>
+<li>支持“编译依存性最小化”的一般构想是：相依与声明式，不要相依于定义式。基于此构想的两个手段是 Handle classes 和 Interface classes</li>
+<li>程序库头文件应该以“完全且仅有声明式”的形式存在</li>
+</ol>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[Effective C++ 笔记（04）]]></title>
+        <id>https://Miaite.github.io/post/gbhU7f2k5/</id>
+        <link href="https://Miaite.github.io/post/gbhU7f2k5/">
+        </link>
+        <updated>2020-11-10T06:29:15.000Z</updated>
+        <summary type="html"><![CDATA[<p>本篇笔记包含 Term 18~25。</p>
+]]></summary>
+        <content type="html"><![CDATA[<p>本篇笔记包含 Term 18~25。</p>
+<!-- more -->
+<h2 id="term-18让接口容易被正确使用不易被误用">Term 18：让接口容易被正确使用，不易被误用</h2>
+<p>这一点其实比较难做到，可以参考这几个方面：</p>
+<ol>
+<li>接口的一致性，与内置类型（包括 STL）的行为兼容</li>
+<li>防止误用包括建立新类型、限制类型上的操作、束缚对象的值以及自动管理资源</li>
+<li>shared_ptr 支持定制型 deleter，可以防范 DLL 问题，可用来自动解除互斥锁</li>
+</ol>
+<h2 id="term-19设计-class-犹如设计-type">Term 19：设计 class 犹如设计 type</h2>
+<p>在 C++ 中，设计一个通用的 class 就是设计一个新的类型，需要考虑以下一些方面：</p>
+<ol>
+<li>新 type 的对象应该如何被创建和销毁？</li>
+<li>对象的初始化和对象的赋值该有什么样的差别？调用不同的函数</li>
+<li>新 type 的对象如果被 passed by value，意味着什么？会调用 copy 构造函数</li>
+<li>什么是新 type 的合法值？</li>
+<li>你的新 type 需要配合某个继承图系吗？继承自某个 class 或者允许被继承有不同的设计要点</li>
+<li>你的新 type 需要什么样的转换？考虑是否需要在不同的 class 对象之间转换，设计显式/隐式转换</li>
+<li>什么样的操作符和函数对此新 type 而言是合理的？</li>
+<li>什么样的标准函数应该驳回？禁用编译器自动生成的函数</li>
+<li>谁该取用新 type 的成员？考虑如何设置 public/protect/private 成员以及 friends</li>
+<li>什么是新 type 的 undeclared interface？</li>
+<li>你的新 type 有多么一般化？考虑定义一个新的 class template</li>
+<li>你真的需要一个新 type 吗？也许通过多个函数或者 template 就能达到需要</li>
+</ol>
+<h2 id="term-20宁以-pass-by-reference-const-替换-pass-by-value">Term 20：宁以 pass-by-reference-const 替换 pass-by-value</h2>
+<p>C++ 默认以 value 形式进行传递，这会带来大量的复制消耗，而且可能造成对象切割（slicing）问题。以 reference 传递会高效很多。但也有例外，内置类型、STL 迭代器以及函数对象以 value 传递更加合适。</p>
+<h2 id="term-21必须返回对象时别妄想返回器-reference">Term 21：必须返回对象时，别妄想返回器 reference</h2>
+<p>返回 pointer/reference 指向 local 对象是错误行为，指向 local static 也是愚蠢的行为（但可行），reference 指向 heap-allocated 对象会内存泄漏。</p>
+<h2 id="term-22将成员变量声明为-private">Term 22：将成员变量声明为 private</h2>
+<p>简单来说，就是为了提高 class 的封装性</p>
+<h2 id="term-23宁以-non-menber-non-friend-替换-member-函数">Term 23：宁以 non-menber、non-friend 替换 member 函数</h2>
+<p>这样既可以增加 class 的封装性，也可以让函数更容易扩充。</p>
+<h2 id="term-24若所有参数皆需类型转换请为此采用-non-menber-函数">Term 24：若所有参数皆需类型转换，请为此采用 non-menber 函数</h2>
+<p>采用 non-menber 函数可以进行合适的隐式类型转换。</p>
+<h2 id="term-25考虑写出一个不抛出异常的-swap-函数">Term 25：考虑写出一个不抛出异常的 swap 函数</h2>
+<p>STL 中默认的 swap 函数会调用 copy 构造函数和 copy 赋值运算符，在某些情况下带来不必要的性能损耗。可以考虑的改写思路：</p>
+<ol>
+<li>添加一个用于 swap 的 public member 函数（不能抛出异常）</li>
+<li>在 class 或者 template 的命名空间提供一个 non-member 函数 swap，用这个函数调用 1. 中的 member 函数 swap。这点可适用于 class template</li>
+<li>特化 std::swap 来调用 member 函数 swap</li>
+<li>用户使用 swap 时应当使用 <code>using std::swap;</code></li>
+</ol>
+<pre><code>template&lt;typename T&gt;
+void doSomething(T&amp; obj1, T&amp; obj2){
+    using std::swap;    // 让 std::swap 在此函数内可见
+    swap(obj1, obj2);    // 自动选择最佳的 swap 版本
+}
+</code></pre>
+]]></content>
+    </entry>
     <entry>
         <title type="html"><![CDATA[Effective C++ 笔记（03）]]></title>
         <id>https://Miaite.github.io/post/386I6Xacv/</id>

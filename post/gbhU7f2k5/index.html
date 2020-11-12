@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" >
 
-<title>Effective C++ 笔记（03） | A Blog of Miaite</title>
+<title>Effective C++ 笔记（04） | A Blog of Miaite</title>
 <meta name="description" content="一些流水账，技术笔记为主">
 
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
@@ -81,50 +81,67 @@
       <div class="sm-12 md-8 col">
         <div class="paper">
           <article class="article">
-            <h1>Effective C++ 笔记（03）</h1>
+            <h1>Effective C++ 笔记（04）</h1>
             <p class="article-meta">
-              2020-11-07
+              2020-11-10
               
-                <a href="https://Miaite.github.io/tag/U4pTdc1co/" class="badge secondary">
+                <a href="https://Miaite.github.io/tag/U4pTdc1co/" class="badge ">
                   C++从入门到入坟
                 </a>
               
             </p>
             
-              <img src="https://img3.doubanio.com/view/subject/l/public/s4647091.jpg" alt="Effective C++ 笔记（03）">
+              <img src="https://img3.doubanio.com/view/subject/l/public/s4647091.jpg" alt="Effective C++ 笔记（04）">
             
             <div class="post-content">
-              <p>本篇笔记包含 Term 13~17。</p>
+              <p>本篇笔记包含 Term 18~25。</p>
 <!-- more -->
-<h2 id="term-13以对象管理资源">Term 13：以对象管理资源</h2>
-<p>编写 C++ 程序容易遇到的一个问题就是内存泄漏，手动 <code>delete</code> 容易遇到各种问题。一个较好的解决方案是使用类来管理资源，通过析构过程保证资源的正确释放。</p>
+<h2 id="term-18让接口容易被正确使用不易被误用">Term 18：让接口容易被正确使用，不易被误用</h2>
+<p>这一点其实比较难做到，可以参考这几个方面：</p>
 <ol>
-<li>使用 RAII 对象，在其构造函数中获取资源，析构函数中释放资源</li>
-<li>常用的 RAII 对象，智能指针，shared_ptr 和 unique_ptr</li>
+<li>接口的一致性，与内置类型（包括 STL）的行为兼容</li>
+<li>防止误用包括建立新类型、限制类型上的操作、束缚对象的值以及自动管理资源</li>
+<li>shared_ptr 支持定制型 deleter，可以防范 DLL 问题，可用来自动解除互斥锁</li>
 </ol>
-<h2 id="term-14在资源管理类中小心-copying-行为">Term 14：在资源管理类中小心 copying 行为</h2>
-<p>可选的策略有：</p>
+<h2 id="term-19设计-class-犹如设计-type">Term 19：设计 class 犹如设计 type</h2>
+<p>在 C++ 中，设计一个通用的 class 就是设计一个新的类型，需要考虑以下一些方面：</p>
 <ol>
-<li>禁止复制</li>
-<li>引用计数</li>
-<li>深拷贝</li>
-<li>转移所有权（auto_ptr 那样的行为）</li>
+<li>新 type 的对象应该如何被创建和销毁？</li>
+<li>对象的初始化和对象的赋值该有什么样的差别？调用不同的函数</li>
+<li>新 type 的对象如果被 passed by value，意味着什么？会调用 copy 构造函数</li>
+<li>什么是新 type 的合法值？</li>
+<li>你的新 type 需要配合某个继承图系吗？继承自某个 class 或者允许被继承有不同的设计要点</li>
+<li>你的新 type 需要什么样的转换？考虑是否需要在不同的 class 对象之间转换，设计显式/隐式转换</li>
+<li>什么样的操作符和函数对此新 type 而言是合理的？</li>
+<li>什么样的标准函数应该驳回？禁用编译器自动生成的函数</li>
+<li>谁该取用新 type 的成员？考虑如何设置 public/protect/private 成员以及 friends</li>
+<li>什么是新 type 的 undeclared interface？</li>
+<li>你的新 type 有多么一般化？考虑定义一个新的 class template</li>
+<li>你真的需要一个新 type 吗？也许通过多个函数或者 template 就能达到需要</li>
 </ol>
-<h2 id="term-15在资源管理类中提供对原始资源的访问">Term 15：在资源管理类中提供对原始资源的访问</h2>
-<p>RAII class 应当提供一个直接获取到原始资源（指针/引用）的方法。一般来说，显示转换比较安全，隐式转换比较方便。</p>
-<h2 id="term-16成对使用-new-和-delete-时要采取相同形式">Term 16：成对使用 new 和 delete 时要采取相同形式</h2>
-<p>如果在 <code>new</code> 时使用了 <code>[]</code>，那么在 <code>delete</code> 时也应使用 <code>[]</code>，未使用 <code>[]</code> 时同样要准寻这个原则，以避免释放资源出错。</p>
-<h2 id="term-17以独立语句将-newed-对象置入智能指针">Term 17：以独立语句将 newed 对象置入智能指针</h2>
-<p>要以独立语句将 newed 对象置入智能指针，否则可能发生难以察觉的资源泄漏</p>
-<pre><code>// 首先有以下定义
-int priority();
-void processWidget(std::tr1::shared_ptr&lt;Widget&gt; pw, int priority);
-// 几种调用
-processWidget(new Widget, priority());    // 出错，shared_ptr 无法隐式转换
-processWidget(std::tr1::shared_ptr&lt;Widget&gt; (new Widget), priority());    // 虽然可以通过编译，但是假如 priority() 先于 shared_ptr 的构造函数执行且出现异常，则资源泄漏
-// 下面时正确做法
-std::tr1::shared_ptr&lt;Widget&gt; pw(new Widget);
-processWidget(pw, priority());
+<h2 id="term-20宁以-pass-by-reference-const-替换-pass-by-value">Term 20：宁以 pass-by-reference-const 替换 pass-by-value</h2>
+<p>C++ 默认以 value 形式进行传递，这会带来大量的复制消耗，而且可能造成对象切割（slicing）问题。以 reference 传递会高效很多。但也有例外，内置类型、STL 迭代器以及函数对象以 value 传递更加合适。</p>
+<h2 id="term-21必须返回对象时别妄想返回器-reference">Term 21：必须返回对象时，别妄想返回器 reference</h2>
+<p>返回 pointer/reference 指向 local 对象是错误行为，指向 local static 也是愚蠢的行为（但可行），reference 指向 heap-allocated 对象会内存泄漏。</p>
+<h2 id="term-22将成员变量声明为-private">Term 22：将成员变量声明为 private</h2>
+<p>简单来说，就是为了提高 class 的封装性</p>
+<h2 id="term-23宁以-non-menber-non-friend-替换-member-函数">Term 23：宁以 non-menber、non-friend 替换 member 函数</h2>
+<p>这样既可以增加 class 的封装性，也可以让函数更容易扩充。</p>
+<h2 id="term-24若所有参数皆需类型转换请为此采用-non-menber-函数">Term 24：若所有参数皆需类型转换，请为此采用 non-menber 函数</h2>
+<p>采用 non-menber 函数可以进行合适的隐式类型转换。</p>
+<h2 id="term-25考虑写出一个不抛出异常的-swap-函数">Term 25：考虑写出一个不抛出异常的 swap 函数</h2>
+<p>STL 中默认的 swap 函数会调用 copy 构造函数和 copy 赋值运算符，在某些情况下带来不必要的性能损耗。可以考虑的改写思路：</p>
+<ol>
+<li>添加一个用于 swap 的 public member 函数（不能抛出异常）</li>
+<li>在 class 或者 template 的命名空间提供一个 non-member 函数 swap，用这个函数调用 1. 中的 member 函数 swap。这点可适用于 class template</li>
+<li>特化 std::swap 来调用 member 函数 swap</li>
+<li>用户使用 swap 时应当使用 <code>using std::swap;</code></li>
+</ol>
+<pre><code>template&lt;typename T&gt;
+void doSomething(T&amp; obj1, T&amp; obj2){
+    using std::swap;    // 让 std::swap 在此函数内可见
+    swap(obj1, obj2);    // 自动选择最佳的 swap 版本
+}
 </code></pre>
 
             </div>
@@ -136,9 +153,9 @@ processWidget(pw, priority());
               <div class="next">
                 下一篇
               </div>
-              <a href="https://Miaite.github.io/post/ol7D4iZKg/">
+              <a href="https://Miaite.github.io/post/386I6Xacv/">
                 <h3 class="post-title">
-                  Effective C++ 笔记（02）
+                  Effective C++ 笔记（03）
                 </h3>
               </a>
             </div>
@@ -227,7 +244,7 @@ processWidget(pw, priority());
     </div>
     <div class="row">
       
-        <a href="https://Miaite.github.io/tag/U4pTdc1co/" class="badge secondary">
+        <a href="https://Miaite.github.io/tag/U4pTdc1co/" class="badge warning">
           C++从入门到入坟
         </a>
       

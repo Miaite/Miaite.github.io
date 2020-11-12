@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" >
 
-<title>关于 | A Blog of Miaite</title>
+<title>Effective C++ 笔记（05） | A Blog of Miaite</title>
 <meta name="description" content="一些流水账，技术笔记为主">
 
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
@@ -81,25 +81,66 @@
       <div class="sm-12 md-8 col">
         <div class="paper">
           <article class="article">
-            <h1>关于</h1>
+            <h1>Effective C++ 笔记（05）</h1>
             <p class="article-meta">
-              2019-01-25
+              2020-11-11
+              
+                <a href="https://Miaite.github.io/tag/U4pTdc1co/" class="badge secondary">
+                  C++从入门到入坟
+                </a>
               
             </p>
             
+              <img src="https://img3.doubanio.com/view/subject/l/public/s4647091.jpg" alt="Effective C++ 笔记（05）">
+            
             <div class="post-content">
-              <blockquote>
-<p>欢迎来到我的小站呀，很高兴遇见你！🤝</p>
-</blockquote>
-<h2 id="关于本站">🏠 关于本站</h2>
-<h2 id="博主是谁">👨‍💻 博主是谁</h2>
-<h2 id="兴趣爱好">⛹ 兴趣爱好</h2>
-<h2 id="联系我呀">📬 联系我呀</h2>
+              <p>本篇笔记包含 Term 26~31。</p>
+<!-- more -->
+<h2 id="term-26尽可能延后变量定义式出现时间">Term 26：尽可能延后变量定义式出现时间</h2>
+<p>定义一个变量（或者对象）对调用其构造函数，因此最好时在需要的时刻才去定义并初始化。至于只在循环内使用的变量通常定义在<strong>循环内</strong>，除非明确知道赋值比构造+析构更加高效而且确实有必要时，才将其定义在循环外。</p>
+<h2 id="term-27尽量少做转型动作">Term 27：尽量少做转型动作</h2>
+<ol>
+<li>如果可以，尽量避免转型，特别是避免低效的 dynamic_casts，优先尝试其它的解决方案</li>
+<li>如果转型是必要的，试着将它隐藏与函数之中</li>
+<li>不要使用 C 风格的转型</li>
+</ol>
+<h2 id="term-28避免返回-handles-指向对象内部成分">Term 28：避免返回 handles 指向对象内部成分</h2>
+<p>避免返回 handles（包括指针、引用、迭代器）指向对象内部成分。这样可以增加封装性，并且避免 handle 在对象被销毁后指向空。</p>
+<h2 id="term-29为异常安全而努力是值得的">Term 29：为“异常安全”而努力是值得的</h2>
+<ol>
+<li>异常安全函数即使发生异常也不会泄漏资源或允许任何数据结构破坏</li>
+<li>异常安全函数三种保证：基本型（保证程序有效）、强烈型（保证程序回到之前的状态）、不抛异常型</li>
+<li>强烈保证往往能够以 copy-and-swap 实现出来，但强烈保证并非对所有函数都可以实现或具备现实意义</li>
+<li>函数提供的异常安全保证通常等于其所调用的函数中异常安全保证最弱的那个（木桶效应）</li>
+</ol>
+<h2 id="term-30透彻了解-inlining-的里里外外">Term 30：透彻了解 inlining 的里里外外</h2>
+<p>inline 是编译器可选的操作，实际取决于具体编译器的平台和版本等。</p>
+<ol>
+<li>定义于 class 内的函数是一种隐式 inline 请求</li>
+<li>inline 应当用于小型的、调用频繁的函数，避免代码膨胀，使调试和程序升级的过程也变得更加容易</li>
+</ol>
+<h2 id="term-31将文件间的编译依存关系降至最低">Term 31：将文件间的编译依存关系降至最低</h2>
+<p>降低文件间的编译依存关系有助于减少编译的工作量</p>
+<ol>
+<li>支持“编译依存性最小化”的一般构想是：相依与声明式，不要相依于定义式。基于此构想的两个手段是 Handle classes 和 Interface classes</li>
+<li>程序库头文件应该以“完全且仅有声明式”的形式存在</li>
+</ol>
 
             </div>
           </article>
         </div>
         <div class="paper" data-aos="fade-in">
+          
+            <div class="next-post">
+              <div class="next">
+                下一篇
+              </div>
+              <a href="https://Miaite.github.io/post/gbhU7f2k5/">
+                <h3 class="post-title">
+                  Effective C++ 笔记（04）
+                </h3>
+              </a>
+            </div>
           
         </div>
         
@@ -185,7 +226,7 @@
     </div>
     <div class="row">
       
-        <a href="https://Miaite.github.io/tag/U4pTdc1co/" class="badge success">
+        <a href="https://Miaite.github.io/tag/U4pTdc1co/" class="badge ">
           C++从入门到入坟
         </a>
       
