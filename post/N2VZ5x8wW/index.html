@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" >
 
-<title>Effective C++ 笔记（02） | A Blog of Miaite</title>
+<title>Effective C++ 笔记（06） | A Blog of Miaite</title>
 <meta name="description" content="一些流水账，技术笔记为主">
 
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
@@ -81,52 +81,86 @@
       <div class="sm-12 md-8 col">
         <div class="paper">
           <article class="article">
-            <h1>Effective C++ 笔记（02）</h1>
+            <h1>Effective C++ 笔记（06）</h1>
             <p class="article-meta">
-              2020-11-05
+              2020-11-15
               
-                <a href="https://Miaite.github.io/tag/U4pTdc1co/" class="badge secondary">
+                <a href="https://Miaite.github.io/tag/U4pTdc1co/" class="badge warning">
                   C++从入门到入坟
                 </a>
               
             </p>
             
-              <img src="https://img3.doubanio.com/view/subject/l/public/s4647091.jpg" alt="Effective C++ 笔记（02）">
+              <img src="https://img3.doubanio.com/view/subject/l/public/s4647091.jpg" alt="Effective C++ 笔记（06）">
             
             <div class="post-content">
-              <p>本篇笔记包含 Term 05~12。</p>
+              <p>本篇笔记包含 Term 32~40。</p>
 <!-- more -->
-<h2 id="term-05了解-c-默默编写并调用了哪些函数">Term 05：了解 C++ 默默编写并调用了哪些函数</h2>
-<p>编译器会为 class 创建 default 构造函数、copy 构造函数、copy assignment 操作符以及析构函数，它们都是 public 以及 inline 的。注意到，当 copy assignment 操作符在父类中被声明为 private 或者含有 const 成员面对等情况，编译器不会自动创建 copy assignment 操作符；编译器自动创建的析构函数不是虚函数，除非继承自虚函数。</p>
-<h2 id="term-06若不想使用编译器自动生成的函数就应该明确拒绝">Term 06：若不想使用编译器自动生成的函数，就应该明确拒绝</h2>
-<p>通过 Term 05 我们知道编译器会自动生成一些成员函数，但有时我们可能不需要这种功能。解决方法：</p>
+<h2 id="term-32确定你的-public-继承塑模出-is-a-关系">Term 32：确定你的 public 继承塑模出 is-a 关系</h2>
+<p>public 继承意味着 is-a 关系。适用于 base classes 的每一件事情同样适用于 derived classes。</p>
+<h2 id="term-33避免遮掩继承而来的名称">Term 33：避免遮掩继承而来的名称</h2>
+<p>和局部/全局作用域类似，派生类/基类的成员也有这样的作用域覆盖关系。</p>
 <ol>
-<li>将该成员函数声明为 private 并且不予实现</li>
-<li>按照 1. 构建一个基类，然后去继承它</li>
-<li>使用 C++(11) 提供的 <code>=default</code> 和 <code>=delete</code> 显式启用或者禁用编译器自动版本的函数</li>
+<li>derived classes 内的名称会遮掩 base classes 内的名称（包括参数类型不同的函数）。在 public 继承下不应如此。</li>
+<li>可以使用 <code>using</code> 声明式或者转交函数让被遮掩的名称恢复</li>
 </ol>
-<h2 id="term-07为多态基类声明-virtual-析构函数">Term 07：为多态基类声明 virtual 析构函数</h2>
+<pre><code>class Base {
+ public:
+  virtual void mf1() = 0;
+  virtual void mf1(int);
+  void mf2();
+  void mf2(double);
+  ......
+};
+class Derived : public Base {
+ public:
+  using Base::mf1;  // 让 Base::mf1 可见
+  virtual void mf1();
+  void mf2() { Base::mf2(); };  // 实际调用了 Base::mf2()
+  ......
+};
+......
+Derived d;
+int x;
+double y;
+d.mf1();   // 调用 Derived::mf1()
+d.mf1(x);  // 调用 Base::mf1(int)
+d.mf2();   // 调用了 Derived::mf2()，内部实际调用了 Base::mf2()
+d.mf2(y);  // 不可行，被遮蔽
+</code></pre>
+<h2 id="term-34区分接口继承和实现继承">Term 34：区分接口继承和实现继承</h2>
 <ol>
-<li>用作多态的基类应该声明 virtual 析构函数。如果 class 带有 virtual 成员函数，应该声明 virtual 析构函数</li>
-<li>不是基类或者不是用作多态的基类，不应该声明 virtual 析构函数，比如 STL 容器</li>
-<li>以上两点可以避免内存泄漏</li>
+<li>接口继承和实现继承是不同的，在 public 继承下，derived classes 总是继承 base classes 的接口</li>
+<li>pure virtual 函数继承接口</li>
+<li>impure virtual 函数继承接口和缺省实现</li>
+<li>non-virtual 函数继承接口和强制实现，不应该在 derived classes 中 override</li>
 </ol>
-<h2 id="term-08别让异常逃离析构函数">Term 08：别让异常逃离析构函数</h2>
-<p>不应该在析构函数内抛出异常，保证析构函数能执行。将可能造成异常的部分移到另一个函数内或者交给用户自己处理。在 C++(11) 中，可以使用 <code>noexcept</code> 来限制函数，如果出现异常会直接终止程序。</p>
-<h2 id="term-09绝不在构造和析构过程中调用-virtual-函数">Term 09：绝不在构造和析构过程中调用 virtual 函数</h2>
-<p>如果在 base class 构造和析构过程中调用 virtual 函数，该函数的版本是 base class 对应的版本，不会是意图的 derived class 版本。</p>
-<h2 id="term-10令-operator-返回一个-reference-to-this">Term 10：令 operator= 返回一个 reference to *this</h2>
-<p>可以实现右结合的连锁赋值，大家都这么做，一种习惯性接口。</p>
-<h2 id="term-11在-operator-中处理自我赋值">Term 11：在 operator= 中处理“自我赋值”</h2>
+<h2 id="term-35考虑-virtual-函数以外的其它选择">Term 35：考虑 virtual 函数以外的其它选择</h2>
+<p>利用 virtual 函数去实现某些功能可能并非最佳选择，可以考虑一些其它的办法：</p>
 <ol>
-<li>如果将一个对象赋值给自身，会造成安全问题。处理方法可以是：通过地址判断是否是同一对象；安排安全的语句顺序；copy-and-swap</li>
-<li>任何函数，如果操作多个对象，要考虑其中某些对象其实是同一个这种情况</li>
+<li>使用 non-virtual interface(NVI) 手法，以 public non-virtual 成员函数包裹访问性较低的（private） virtual 函数，这是 <strong>Template Method</strong> 设计模式的一种特殊形式</li>
+<li>将 virtual 函数替换为“函数指针成员变量”，这是 <strong>Stratege</strong> 设计模式的一种分解形式</li>
+<li>进一步，将 2. 中的函数指针替换为 <code>tr1::function</code>，则只要能兼容相应的参数的可调用对象都可以被应用上</li>
+<li>对于 3. 中的可调用对象，可以以（继承的）类去实现，相当于抽取出 virtual 函数的功能，在另一个类中实现</li>
+<li>2./3./4. 带来的缺点是，无法访问 non-public 成员</li>
 </ol>
-<h2 id="term-12复制对象时勿忘每一个成分">Term 12：复制对象时勿忘每一个成分</h2>
+<h2 id="term-36绝不重新定义继承而来的-non-virtual-函数">Term 36：绝不重新定义继承而来的 non-virtual 函数</h2>
+<p>这样会造成一些混乱，比如，以一个基类指针指向派生类对象时，调用的 non-virtual 函数会是基类的版本。原因在于静态绑定。</p>
+<h2 id="term-37绝不重新定义继承而来的缺省参数值">Term 37：绝不重新定义继承而来的缺省参数值</h2>
+<p>不要重新定义继承而来的缺省参数值，它是静态绑定，而 virtual 函数是动态绑定。</p>
+<h2 id="term-38通过复合塑模出-has-a-或者根据某物实现出">Term 38：通过复合塑模出 has-a 或者“根据某物实现出”</h2>
+<p>对于 has-a 或者“根据某物实现出”的情况，需要做的不是继承，而是在自己编写的类中使用需要用到的类的对象。</p>
+<h2 id="term-39明智而审慎地使用-private-继承">Term 39：明智而审慎地使用 private 继承</h2>
 <ol>
-<li>copy 构造函数和 copy 赋值操作符会执行拷贝</li>
-<li>拷贝对象时应该把每个成员变量都考虑到，并且调用对应的 base class 的函数</li>
-<li>copy 构造函数和 copy 赋值操作符之间<strong>不能</strong>互相调用，可以考虑新创建一个成员函数维护冗余代码，然后在 copy 操作时调用</li>
+<li>private 继承意味着“根据某物实现出”这种情况，它通常比复合级别低，在需要访问 protect成员或者需要 override virtual 函数时，这样的设计时合理的</li>
+<li>private 继承在大多数编译器中可以实现 empty base optimization，这对空间敏感的开发任务有效</li>
+</ol>
+<h2 id="term-40明智而审慎地使用多重继承">Term 40：明智而审慎地使用多重继承</h2>
+<ol>
+<li>多重继承可能导致歧义性，以及对 virtual 继承的需要</li>
+<li>virtual 继承会增加各方面成本，最佳情况时不带任何数据</li>
+<li>多重继承在某些情况确实有用，比如 public 继承一个接口 class，同时 private 继承一个实现 class</li>
+<li>尽量不要使用多重继承</li>
 </ol>
 
             </div>
@@ -138,9 +172,9 @@
               <div class="next">
                 下一篇
               </div>
-              <a href="https://Miaite.github.io/post/UyR9S6D5b/">
+              <a href="https://Miaite.github.io/post/Lxmd6dG5E/">
                 <h3 class="post-title">
-                  Effective C++ 笔记（01）
+                  Effective C++ 笔记（05）
                 </h3>
               </a>
             </div>
@@ -235,7 +269,7 @@
     </div>
     <div class="row">
       
-        <a href="https://Miaite.github.io/tag/U4pTdc1co/" class="badge ">
+        <a href="https://Miaite.github.io/tag/U4pTdc1co/" class="badge warning">
           C++从入门到入坟
         </a>
       

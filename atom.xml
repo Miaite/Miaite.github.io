@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://Miaite.github.io</id>
     <title>A Blog of Miaite</title>
-    <updated>2020-11-12T06:09:53.186Z</updated>
+    <updated>2020-11-15T07:39:58.466Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://Miaite.github.io"/>
     <link rel="self" href="https://Miaite.github.io/atom.xml"/>
@@ -10,6 +10,84 @@
     <logo>https://Miaite.github.io/images/avatar.png</logo>
     <icon>https://Miaite.github.io/favicon.ico</icon>
     <rights>All rights reserved 2020, A Blog of Miaite</rights>
+    <entry>
+        <title type="html"><![CDATA[Effective C++ 笔记（06）]]></title>
+        <id>https://Miaite.github.io/post/N2VZ5x8wW/</id>
+        <link href="https://Miaite.github.io/post/N2VZ5x8wW/">
+        </link>
+        <updated>2020-11-15T07:39:08.000Z</updated>
+        <summary type="html"><![CDATA[<p>本篇笔记包含 Term 32~40。</p>
+]]></summary>
+        <content type="html"><![CDATA[<p>本篇笔记包含 Term 32~40。</p>
+<!-- more -->
+<h2 id="term-32确定你的-public-继承塑模出-is-a-关系">Term 32：确定你的 public 继承塑模出 is-a 关系</h2>
+<p>public 继承意味着 is-a 关系。适用于 base classes 的每一件事情同样适用于 derived classes。</p>
+<h2 id="term-33避免遮掩继承而来的名称">Term 33：避免遮掩继承而来的名称</h2>
+<p>和局部/全局作用域类似，派生类/基类的成员也有这样的作用域覆盖关系。</p>
+<ol>
+<li>derived classes 内的名称会遮掩 base classes 内的名称（包括参数类型不同的函数）。在 public 继承下不应如此。</li>
+<li>可以使用 <code>using</code> 声明式或者转交函数让被遮掩的名称恢复</li>
+</ol>
+<pre><code>class Base {
+ public:
+  virtual void mf1() = 0;
+  virtual void mf1(int);
+  void mf2();
+  void mf2(double);
+  ......
+};
+class Derived : public Base {
+ public:
+  using Base::mf1;  // 让 Base::mf1 可见
+  virtual void mf1();
+  void mf2() { Base::mf2(); };  // 实际调用了 Base::mf2()
+  ......
+};
+......
+Derived d;
+int x;
+double y;
+d.mf1();   // 调用 Derived::mf1()
+d.mf1(x);  // 调用 Base::mf1(int)
+d.mf2();   // 调用了 Derived::mf2()，内部实际调用了 Base::mf2()
+d.mf2(y);  // 不可行，被遮蔽
+</code></pre>
+<h2 id="term-34区分接口继承和实现继承">Term 34：区分接口继承和实现继承</h2>
+<ol>
+<li>接口继承和实现继承是不同的，在 public 继承下，derived classes 总是继承 base classes 的接口</li>
+<li>pure virtual 函数继承接口</li>
+<li>impure virtual 函数继承接口和缺省实现</li>
+<li>non-virtual 函数继承接口和强制实现，不应该在 derived classes 中 override</li>
+</ol>
+<h2 id="term-35考虑-virtual-函数以外的其它选择">Term 35：考虑 virtual 函数以外的其它选择</h2>
+<p>利用 virtual 函数去实现某些功能可能并非最佳选择，可以考虑一些其它的办法：</p>
+<ol>
+<li>使用 non-virtual interface(NVI) 手法，以 public non-virtual 成员函数包裹访问性较低的（private） virtual 函数，这是 <strong>Template Method</strong> 设计模式的一种特殊形式</li>
+<li>将 virtual 函数替换为“函数指针成员变量”，这是 <strong>Stratege</strong> 设计模式的一种分解形式</li>
+<li>进一步，将 2. 中的函数指针替换为 <code>tr1::function</code>，则只要能兼容相应的参数的可调用对象都可以被应用上</li>
+<li>对于 3. 中的可调用对象，可以以（继承的）类去实现，相当于抽取出 virtual 函数的功能，在另一个类中实现</li>
+<li>2./3./4. 带来的缺点是，无法访问 non-public 成员</li>
+</ol>
+<h2 id="term-36绝不重新定义继承而来的-non-virtual-函数">Term 36：绝不重新定义继承而来的 non-virtual 函数</h2>
+<p>这样会造成一些混乱，比如，以一个基类指针指向派生类对象时，调用的 non-virtual 函数会是基类的版本。原因在于静态绑定。</p>
+<h2 id="term-37绝不重新定义继承而来的缺省参数值">Term 37：绝不重新定义继承而来的缺省参数值</h2>
+<p>不要重新定义继承而来的缺省参数值，它是静态绑定，而 virtual 函数是动态绑定。</p>
+<h2 id="term-38通过复合塑模出-has-a-或者根据某物实现出">Term 38：通过复合塑模出 has-a 或者“根据某物实现出”</h2>
+<p>对于 has-a 或者“根据某物实现出”的情况，需要做的不是继承，而是在自己编写的类中使用需要用到的类的对象。</p>
+<h2 id="term-39明智而审慎地使用-private-继承">Term 39：明智而审慎地使用 private 继承</h2>
+<ol>
+<li>private 继承意味着“根据某物实现出”这种情况，它通常比复合级别低，在需要访问 protect成员或者需要 override virtual 函数时，这样的设计时合理的</li>
+<li>private 继承在大多数编译器中可以实现 empty base optimization，这对空间敏感的开发任务有效</li>
+</ol>
+<h2 id="term-40明智而审慎地使用多重继承">Term 40：明智而审慎地使用多重继承</h2>
+<ol>
+<li>多重继承可能导致歧义性，以及对 virtual 继承的需要</li>
+<li>virtual 继承会增加各方面成本，最佳情况时不带任何数据</li>
+<li>多重继承在某些情况确实有用，比如 public 继承一个接口 class，同时 private 继承一个实现 class</li>
+<li>尽量不要使用多重继承</li>
+</ol>
+]]></content>
+    </entry>
     <entry>
         <title type="html"><![CDATA[Effective C++ 笔记（05）]]></title>
         <id>https://Miaite.github.io/post/Lxmd6dG5E/</id>
