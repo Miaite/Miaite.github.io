@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://Miaite.github.io</id>
     <title>A Blog of Miaite</title>
-    <updated>2020-11-15T07:39:58.466Z</updated>
+    <updated>2020-11-19T08:11:54.454Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://Miaite.github.io"/>
     <link rel="self" href="https://Miaite.github.io/atom.xml"/>
@@ -10,6 +10,183 @@
     <logo>https://Miaite.github.io/images/avatar.png</logo>
     <icon>https://Miaite.github.io/favicon.ico</icon>
     <rights>All rights reserved 2020, A Blog of Miaite</rights>
+    <entry>
+        <title type="html"><![CDATA[Effective C++ 笔记（08）]]></title>
+        <id>https://Miaite.github.io/post/CvQvuRPWt/</id>
+        <link href="https://Miaite.github.io/post/CvQvuRPWt/">
+        </link>
+        <updated>2020-11-19T08:11:46.000Z</updated>
+        <summary type="html"><![CDATA[<p>本篇笔记包含 Term 49~55。</p>
+]]></summary>
+        <content type="html"><![CDATA[<p>本篇笔记包含 Term 49~55。</p>
+<!-- more -->
+<h2 id="term-49了解-new-handler-的行为">Term 49：了解 new-handler 的行为</h2>
+<p>当 operator new 无法满足内存分配需求时，会抛出异常，且在此之前，会先调用用户设置的错误处理函数（即 new-handler）。通过 <code>std::set_new_handler</code> 可以设置 new-handler，要使其设计良好，需要满足以下条件：</p>
+<ol>
+<li>让更多内存可被使用</li>
+<li>安装另一个 new-handler：设置调用另一个可能解决问题的 new-handler</li>
+<li>卸除 new-handler：将 null 指针传给 set_new_handler。没有安装 new-handler 时 operator new 分配失败抛出异常</li>
+<li>不返回：通常调用 abort 或 exit</li>
+</ol>
+<p>C++ 没有直接为 class 定制 new-handler 的语法，但我们仍然可以办到：</p>
+<pre><code>template &lt;typename T&gt;
+class NewHandlerSupport {  // mixin 风格的 base class，用以支持 class 专属的 set_new_handler
+ public:
+  static std::new_handler set_new_handler(std::new_handler) throw();
+  static void* operator new(std::size_t size) throw(std::bad_alloc);
+
+ private:
+  static std::new_handler currentHandler;
+};
+template &lt;typename T&gt;
+std::new_handler NewHandlerSupport&lt;T&gt;::set_new_handler(std::new_handler p) throw() {
+  std::new_handler oldHandler = currentHandler;
+  currentHandler = p;
+  return oldHandler;
+}
+template &lt;typename T&gt;
+void* NewHandlerSupport&lt;T&gt;::operator new(std::size_t size) throw(std::bad_alloc) {
+  NewHandlerSupport h(std::set_new_handler(currentHandler));
+  return ::operator new(size);
+}
+template &lt;typename T&gt;
+std::new_handler NewHandlerSupport&lt;T&gt;::currentHandler = 0;  // 将 currentHandler 初始化为 null
+// 使用方式如下
+class Widget: public NewHandlerSupport&lt;Widget&gt; { ... } // 以自身类型继承这样一个模板类就足够
+</code></pre>
+<h2 id="term-50了解-new-和-delete-的合理替换时机">Term 50：了解 new 和 delete 的合理替换时机</h2>
+<p>使用自定义的 operator new 和 operator delete 的合理使用场景：</p>
+<ol>
+<li>用来检测运用错误</li>
+<li>收集动态分配内存的统计数据</li>
+<li>增加分配和归还的速度</li>
+<li>降低默认内存管理器带来的额外开销</li>
+<li>实现内存地址对齐（alignment）</li>
+<li>将相关的对象成簇集中，降低缺页中断的概率，因为它们很可能同时被调用</li>
+<li>实现一些特定行为，例如在归还内存时将内容抹除</li>
+</ol>
+<h2 id="term-51编写-new-和-delete-时需固守常规">Term 51：编写 new 和 delete 时需固守常规</h2>
+<p>operator new 分配成功时返回指针，不成功则调用 new-handler，可能会再尝试分配，所有的 new-handler 失败，则抛出 bad_alloc 异常。在设计自定义的 operator new 和 operator delete 过程中，需要注意：</p>
+<ol>
+<li>即使请求的是 0 byte， operator new 也要返回一个合法的指针，则可以简单地将 0 视为 1</li>
+<li>operator new 应该内含无穷循环来实现上面那段话</li>
+<li>class 专属版本的 operator new 应该处理错误大小的分配请求，比如被派生类继承之后，对派生类使用（基类的） new 会造成大小错误</li>
+<li>operator delete 应该在收到 null 指针时不做任何事</li>
+<li>class 专属版本的 operator delete 应该处理错误大小的分配请求</li>
+</ol>
+<h2 id="term-52写了-placement-new-也要写-placement-delete">Term 52：写了 placement new 也要写 placement delete</h2>
+<ol>
+<li>编写了 placement new 也要写 placement delete，否则可能会造成内存泄漏</li>
+<li>声明  placement new 和 placement delete 时，要注意不要遮蔽了它们的正常版本</li>
+</ol>
+<h2 id="term-53不要轻忽编译器的警告">Term 53：不要轻忽编译器的警告</h2>
+<ol>
+<li>认真考虑编译器的警告</li>
+<li>不同编译器针对相同代码的警告处理可能不一样</li>
+</ol>
+<h2 id="term-54让自己熟悉包括-tr1-在内的标准程序库">Term 54：让自己熟悉包括 TR1 在内的标准程序库</h2>
+<p>如题。</p>
+<h2 id="term-55让自己熟悉-boost">Term 55：让自己熟悉 Boost</h2>
+<p>在 Modern C++ 的时代，Boost 的应用意义已经不如从前。但在熟悉标准程序库之后，Boost 仍是很好的学习对象，它包含了可能在未来会纳入标准程序库的一些东西。</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[Effective C++ 笔记（07）]]></title>
+        <id>https://Miaite.github.io/post/sF-ehhx1o/</id>
+        <link href="https://Miaite.github.io/post/sF-ehhx1o/">
+        </link>
+        <updated>2020-11-17T12:33:03.000Z</updated>
+        <summary type="html"><![CDATA[<p>本篇笔记包含 Term 41~48。</p>
+]]></summary>
+        <content type="html"><![CDATA[<p>本篇笔记包含 Term 41~48。</p>
+<!-- more -->
+<h2 id="term-41了解隐式接口和编译期多态">Term 41：了解隐式接口和编译期多态</h2>
+<ol>
+<li>classes 和 templates 都支持接口和多态</li>
+<li>对 classes 而言接口时显式的，以函数签名（函数名、参数类型、返回类型）为中心。多态则通过 virtual 函数发生与运行期</li>
+<li>对 templates 参数而言，接口是隐式的，基于有效表达式。多态则是通过 template 具现化和函数重载解析发生与编译期</li>
+</ol>
+<h2 id="term-42了解-typename-的双重意义">Term 42：了解 typename 的双重意义</h2>
+<ol>
+<li>声明 template 参数时，前缀关键字 class 和 typename 同义</li>
+<li>需要使用关键字 typename 标识嵌套从属类型名称；但不得在 base class lists（基类列）或 member initialization list 内以它作为 base class 修饰符</li>
+</ol>
+<pre><code>template &lt;typename C&gt;               // 可以使用 typename 或者 class
+void f(const C&amp; container,          // 不能使用 typename
+       typename C::iterator iter);  // 应该使用 typename
+
+template &lt;typename T&gt;
+class Drived : public Base&lt;T&gt;::Nested {  // 不使用 typename
+ public:
+  explicit Derived(int x) : Base&lt;T&gt;::Nested(x) {  // 不使用 typename
+    typename Base&lt;T&gt;::Nested tmp;                 // 使用 typename
+  }
+};
+</code></pre>
+<h2 id="term-43学习处理模板化基类内的名称">Term 43：学习处理模板化基类内的名称</h2>
+<p>派生类继承模板化基类的情况中，如果直接调用基类中的成员，会无法通过编译，因为编译器<strong>无法知道具体继承自哪个基类</strong>（假如基类被特化，可能根本不包含被调用的成员）。为了解决这个问题，有3种方法：</p>
+<ol>
+<li>使用 <code>this-&gt;</code></li>
+<li>使用 <code>using</code></li>
+<li>明确指明使用 base class 版本（不推荐，相当于关闭了 virtual）</li>
+</ol>
+<pre><code>template &lt;typename Company&gt;
+class LoggingMsgSender: public MsgSender&lt;Company&gt; {  // MsgSender 中包含 sendClear() 函数
+ public:
+  using MsgSender&lt;Company&gt;::sendClear;  // 2.方法
+  void sendClearMsg(const MsgInfo&amp; info) {
+    sendClear(info);                      // 调用失败
+    this-&gt;sendClear(info);                // 1.方法
+    MsgSender&lt;Company&gt;::sendClear(info);  // 3.方法
+  }
+};
+</code></pre>
+<h2 id="term-44将与参数无关的代码抽离-template">Term 44：将与参数无关的代码抽离 template</h2>
+<ol>
+<li>Templates 生成多个 classes 和多个函数，所以任何 template 代码都不该与某个造成膨胀的 template 参数产生相依关系</li>
+<li>因非类型模板参数（non-type template parameters）而造成的代码膨胀，往往可<strong>消除</strong>，做法是以函数参数或 class 成员变量替换 template 参数</li>
+<li>因类型参数（type parameters）而造成的代码膨胀，往往可<strong>降低</strong>，做法是让带有完全相同二进制表述（binary representations）的具现类型（instantiation types）共享实现码</li>
+</ol>
+<h2 id="term-45运用成员函数模板接受所有兼容类型">Term 45：运用成员函数模板接受所有兼容类型</h2>
+<p>智能指针是很好用的东西，但是存在一个问题，其模板写法不能支持隐式的类型转换。真实的指针则可以做到，示例就是派生类指针可以隐式转换为基类指针。为了在使用智能指针时也能达到此效果，需要这样编写程序：</p>
+<pre><code>template &lt;typename T&gt;
+class SmartPtr {
+ public:
+  template &lt;typename U&gt;
+  SmartPtr(const SmartPtr&lt;U&gt;&amp; other) : heldPrt(other.get()) { /*...*/ } // 支持隐式转换的 copy 构造函数模板
+  T* get() const { return heldPtr; }  // 假设通用接口 get() 获取原始指针
+
+ private:
+  T* heldPtr;  // 原始指针
+};
+</code></pre>
+<p>跟上面的操作一样，copy 赋值操作符也可以进行泛化。需注意，函数模板不会覆盖编译器自动生成的 copy 构造函数和copy 赋值操作符。</p>
+<h2 id="term-46需要类型转换时请为模板定义非成员函数">Term 46：需要类型转换时请为模板定义非成员函数</h2>
+<p>Term 24 提到应使用 non-member 函数对所有实参进行类型转换。在使用模板时，情况有一点变化，我们仍然应该编写一个 non-member 函数，然后再 class 中定义 friend 函数并调用外面的 non-member 函数。</p>
+<pre><code>template &lt;typename T&gt; class Rational; // 声明类
+template &lt;typename T&gt;
+const Rational&lt;T&gt; doMultiply(const Rational&lt;T&gt;&amp; lhs, const Rational&lt;T&gt;&amp; rhs); // 声明 helper
+
+template &lt;typename T&gt;
+class Rational {
+ public:
+  friend const Rational&lt;T&gt; operator*(const Rational&lt;T&gt;&amp; lhs, const Rational&lt;T&gt;&amp; rhs) { // 调用 helper
+    return doMultiply(lhs, rhs);
+  }
+};
+
+template &lt;typename T&gt;
+const Rational&lt;T&gt; doMultiply(const Rational&lt;T&gt;&amp; lhs, const Rational&lt;T&gt;&amp; rhs) { ... } // 定义 helper
+</code></pre>
+<h2 id="term-47请使用-traits-classes-表现类型信息">Term 47：请使用 traits classes 表现类型信息</h2>
+<ol>
+<li>Traits classes 使得“类型相关信息”在编译器可用。它们以 templates 技术、typedef 表示类型和 “templates 特化”完成实现</li>
+<li>Traits classes 通过重载，在编译器对类型执行 if...else 测试</li>
+</ol>
+<h2 id="term-48认识-template-元编程">Term 48：认识 template 元编程</h2>
+<p>Template 元编程（TMP）是执行与编译器的过程，通过 template 产生更多源码。TMP 的贡献在于，将一些运行期的工作带到了编译期执行，通常会产生出更加高效的程序，并且在编译期就发现一些问题。TMP 单独来说已经是图灵完全机器，但是编写 TMP 代码会比“一般”C++ 难得多。</p>
+]]></content>
+    </entry>
     <entry>
         <title type="html"><![CDATA[Effective C++ 笔记（06）]]></title>
         <id>https://Miaite.github.io/post/N2VZ5x8wW/</id>

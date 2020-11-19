@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" >
 
-<title>Effective C++ 笔记（02） | A Blog of Miaite</title>
+<title>Effective C++ 笔记（08） | A Blog of Miaite</title>
 <meta name="description" content="一些流水账，技术笔记为主">
 
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
@@ -81,53 +81,89 @@
       <div class="sm-12 md-8 col">
         <div class="paper">
           <article class="article">
-            <h1>Effective C++ 笔记（02）</h1>
+            <h1>Effective C++ 笔记（08）</h1>
             <p class="article-meta">
-              2020-11-05
+              2020-11-19
               
-                <a href="https://Miaite.github.io/tag/U4pTdc1co/" class="badge secondary">
+                <a href="https://Miaite.github.io/tag/U4pTdc1co/" class="badge ">
                   C++从入门到入坟
                 </a>
               
             </p>
             
-              <img src="https://img3.doubanio.com/view/subject/l/public/s4647091.jpg" alt="Effective C++ 笔记（02）">
+              <img src="https://img3.doubanio.com/view/subject/l/public/s4647091.jpg" alt="Effective C++ 笔记（08）">
             
             <div class="post-content">
-              <p>本篇笔记包含 Term 05~12。</p>
+              <p>本篇笔记包含 Term 49~55。</p>
 <!-- more -->
-<h2 id="term-05了解-c-默默编写并调用了哪些函数">Term 05：了解 C++ 默默编写并调用了哪些函数</h2>
-<p>编译器会为 class 创建 default 构造函数、copy 构造函数、copy assignment 操作符以及析构函数，它们都是 public 以及 inline 的。注意到，当 copy assignment 操作符在父类中被声明为 private 或者含有 const 成员面对等情况，编译器不会自动创建 copy assignment 操作符；编译器自动创建的析构函数不是虚函数，除非继承自虚函数。</p>
-<h2 id="term-06若不想使用编译器自动生成的函数就应该明确拒绝">Term 06：若不想使用编译器自动生成的函数，就应该明确拒绝</h2>
-<p>通过 Term 05 我们知道编译器会自动生成一些成员函数，但有时我们可能不需要这种功能。解决方法：</p>
+<h2 id="term-49了解-new-handler-的行为">Term 49：了解 new-handler 的行为</h2>
+<p>当 operator new 无法满足内存分配需求时，会抛出异常，且在此之前，会先调用用户设置的错误处理函数（即 new-handler）。通过 <code>std::set_new_handler</code> 可以设置 new-handler，要使其设计良好，需要满足以下条件：</p>
 <ol>
-<li>将该成员函数声明为 private 并且不予实现</li>
-<li>按照 1. 构建一个基类，然后去继承它</li>
-<li>使用 C++(11) 提供的 <code>=default</code> 和 <code>=delete</code> 显式启用或者禁用编译器自动版本的函数</li>
+<li>让更多内存可被使用</li>
+<li>安装另一个 new-handler：设置调用另一个可能解决问题的 new-handler</li>
+<li>卸除 new-handler：将 null 指针传给 set_new_handler。没有安装 new-handler 时 operator new 分配失败抛出异常</li>
+<li>不返回：通常调用 abort 或 exit</li>
 </ol>
-<h2 id="term-07为多态基类声明-virtual-析构函数">Term 07：为多态基类声明 virtual 析构函数</h2>
+<p>C++ 没有直接为 class 定制 new-handler 的语法，但我们仍然可以办到：</p>
+<pre><code>template &lt;typename T&gt;
+class NewHandlerSupport {  // mixin 风格的 base class，用以支持 class 专属的 set_new_handler
+ public:
+  static std::new_handler set_new_handler(std::new_handler) throw();
+  static void* operator new(std::size_t size) throw(std::bad_alloc);
+
+ private:
+  static std::new_handler currentHandler;
+};
+template &lt;typename T&gt;
+std::new_handler NewHandlerSupport&lt;T&gt;::set_new_handler(std::new_handler p) throw() {
+  std::new_handler oldHandler = currentHandler;
+  currentHandler = p;
+  return oldHandler;
+}
+template &lt;typename T&gt;
+void* NewHandlerSupport&lt;T&gt;::operator new(std::size_t size) throw(std::bad_alloc) {
+  NewHandlerSupport h(std::set_new_handler(currentHandler));
+  return ::operator new(size);
+}
+template &lt;typename T&gt;
+std::new_handler NewHandlerSupport&lt;T&gt;::currentHandler = 0;  // 将 currentHandler 初始化为 null
+// 使用方式如下
+class Widget: public NewHandlerSupport&lt;Widget&gt; { ... } // 以自身类型继承这样一个模板类就足够
+</code></pre>
+<h2 id="term-50了解-new-和-delete-的合理替换时机">Term 50：了解 new 和 delete 的合理替换时机</h2>
+<p>使用自定义的 operator new 和 operator delete 的合理使用场景：</p>
 <ol>
-<li>用作多态的基类应该声明 virtual 析构函数。如果 class 带有 virtual 成员函数，应该声明 virtual 析构函数</li>
-<li>不是基类或者不是用作多态的基类，不应该声明 virtual 析构函数，比如 STL 容器</li>
-<li>以上两点可以避免内存泄漏</li>
+<li>用来检测运用错误</li>
+<li>收集动态分配内存的统计数据</li>
+<li>增加分配和归还的速度</li>
+<li>降低默认内存管理器带来的额外开销</li>
+<li>实现内存地址对齐（alignment）</li>
+<li>将相关的对象成簇集中，降低缺页中断的概率，因为它们很可能同时被调用</li>
+<li>实现一些特定行为，例如在归还内存时将内容抹除</li>
 </ol>
-<h2 id="term-08别让异常逃离析构函数">Term 08：别让异常逃离析构函数</h2>
-<p>不应该在析构函数内抛出异常，保证析构函数能执行。将可能造成异常的部分移到另一个函数内或者交给用户自己处理。在 C++(11) 中，可以使用 <code>noexcept</code> 来限制函数，如果出现异常会直接终止程序。</p>
-<h2 id="term-09绝不在构造和析构过程中调用-virtual-函数">Term 09：绝不在构造和析构过程中调用 virtual 函数</h2>
-<p>如果在 base class 构造和析构过程中调用 virtual 函数，该函数的版本是 base class 对应的版本，不会是意图的 derived class 版本。</p>
-<h2 id="term-10令-operator-返回一个-reference-to-this">Term 10：令 operator= 返回一个 reference to *this</h2>
-<p>可以实现右结合的连锁赋值，大家都这么做，一种习惯性接口。</p>
-<h2 id="term-11在-operator-中处理自我赋值">Term 11：在 operator= 中处理“自我赋值”</h2>
+<h2 id="term-51编写-new-和-delete-时需固守常规">Term 51：编写 new 和 delete 时需固守常规</h2>
+<p>operator new 分配成功时返回指针，不成功则调用 new-handler，可能会再尝试分配，所有的 new-handler 失败，则抛出 bad_alloc 异常。在设计自定义的 operator new 和 operator delete 过程中，需要注意：</p>
 <ol>
-<li>如果将一个对象赋值给自身，会造成安全问题。处理方法可以是：通过地址判断是否是同一对象；安排安全的语句顺序；copy-and-swap</li>
-<li>任何函数，如果操作多个对象，要考虑其中某些对象其实是同一个这种情况</li>
+<li>即使请求的是 0 byte， operator new 也要返回一个合法的指针，则可以简单地将 0 视为 1</li>
+<li>operator new 应该内含无穷循环来实现上面那段话</li>
+<li>class 专属版本的 operator new 应该处理错误大小的分配请求，比如被派生类继承之后，对派生类使用（基类的） new 会造成大小错误</li>
+<li>operator delete 应该在收到 null 指针时不做任何事</li>
+<li>class 专属版本的 operator delete 应该处理错误大小的分配请求</li>
 </ol>
-<h2 id="term-12复制对象时勿忘每一个成分">Term 12：复制对象时勿忘每一个成分</h2>
+<h2 id="term-52写了-placement-new-也要写-placement-delete">Term 52：写了 placement new 也要写 placement delete</h2>
 <ol>
-<li>copy 构造函数和 copy 赋值操作符会执行拷贝</li>
-<li>拷贝对象时应该把每个成员变量都考虑到，并且调用对应的 base class 的函数</li>
-<li>copy 构造函数和 copy 赋值操作符之间<strong>不能</strong>互相调用，可以考虑新创建一个成员函数维护冗余代码，然后在 copy 操作时调用</li>
+<li>编写了 placement new 也要写 placement delete，否则可能会造成内存泄漏</li>
+<li>声明  placement new 和 placement delete 时，要注意不要遮蔽了它们的正常版本</li>
 </ol>
+<h2 id="term-53不要轻忽编译器的警告">Term 53：不要轻忽编译器的警告</h2>
+<ol>
+<li>认真考虑编译器的警告</li>
+<li>不同编译器针对相同代码的警告处理可能不一样</li>
+</ol>
+<h2 id="term-54让自己熟悉包括-tr1-在内的标准程序库">Term 54：让自己熟悉包括 TR1 在内的标准程序库</h2>
+<p>如题。</p>
+<h2 id="term-55让自己熟悉-boost">Term 55：让自己熟悉 Boost</h2>
+<p>在 Modern C++ 的时代，Boost 的应用意义已经不如从前。但在熟悉标准程序库之后，Boost 仍是很好的学习对象，它包含了可能在未来会纳入标准程序库的一些东西。</p>
 
             </div>
           </article>
@@ -138,9 +174,9 @@
               <div class="next">
                 下一篇
               </div>
-              <a href="https://Miaite.github.io/post/UyR9S6D5b/">
+              <a href="https://Miaite.github.io/post/sF-ehhx1o/">
                 <h3 class="post-title">
-                  Effective C++ 笔记（01）
+                  Effective C++ 笔记（07）
                 </h3>
               </a>
             </div>
@@ -247,7 +283,7 @@
     </div>
     <div class="row">
       
-        <a href="https://Miaite.github.io/tag/U4pTdc1co/" class="badge ">
+        <a href="https://Miaite.github.io/tag/U4pTdc1co/" class="badge secondary">
           C++从入门到入坟
         </a>
       
