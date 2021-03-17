@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" >
 
-<title>Effective C++ 笔记（01） | A Blog of Miaite</title>
+<title>算法 | A Blog of Miaite</title>
 <meta name="description" content="一些流水账，技术笔记为主">
 
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
@@ -23,7 +23,6 @@
 
   </head>
   <body>
-  
     <nav class="navbar border fixed split-nav">
   <div class="nav-brand">
     <h3><a href="https://Miaite.github.io">A Blog of Miaite</a></h3>
@@ -80,76 +79,41 @@
     <div id="top" class="row site">
       <div class="sm-12 md-8 col">
         <div class="paper">
-          <article class="article">
-            <h1>Effective C++ 笔记（01）</h1>
-            <p class="article-meta">
-              2020-11-03
-              
-                <a href="https://Miaite.github.io/tag/U4pTdc1co/" class="badge secondary">
-                  C++从入门到入坟
-                </a>
-              
-            </p>
-            
-              <img src="https://img3.doubanio.com/view/subject/l/public/s4647091.jpg" alt="Effective C++ 笔记（01）">
-            
-            <div class="post-content">
-              <p>就学习难度而言，C++是一门臭名昭著的编程语言。《Effective C++》总结了 55 条 C++(98/03)的开发准则，供开发者学习参考。本篇笔记包含 Term 01~04，我也依据 Modern C++ 的改变，对其中某些细节进行了修订。</p>
-<!-- more -->
-<h2 id="term-01视-c-为一个语言联邦">Term 01：视 C++ 为一个语言联邦</h2>
-<p>这一点说起来容易（做起来难）。简单讲，C++ 的语言设计其实有四个部分 ：（兼容）C、面向对象、泛型和模板、STL，这四个部分相互关联却又在设计思想上相对独立。每一个部分都会有一些不同的准则，在 C 中的常用思路不一定适合在泛型和模板中使用。</p>
-<p>一般来说，泛型和模板这一部分是 C++ 程序员最薄弱的，需要特别注意。</p>
-<h2 id="term-02尽量以-const-enum-inline-替换-define">Term 02：尽量以 const, enum, inline 替换 #define</h2>
-<ol>
-<li>对于常量，使用 const 或者 enum hack 代替</li>
-<li>对于形似函数的宏定义，使用 inline 函数代替（可能会用到模板）</li>
-</ol>
-<pre><code>// enum hack 的例子：
-class Game {
-    private:
-        static const int GameTurn = 10;
-        int scores[GameTurn];
-};    //不支持类内初始化的编译器报错
-class GamePlayer{
-    private:
-        enum {NumTurns = 5};
-        int scores[NumTurns];
-};    //不支持类内初始化的编译器也能编译通过
-</code></pre>
-<h2 id="term-03尽可能使用-const">Term 03：尽可能使用 const</h2>
-<ol>
-<li>const 和指针：记住 <code>const</code> 出现在 <code>*</code> 左边，表示被指物是常量；如果出现在 <code>*</code> 右边，表示指针自身是常量；如果出现在 <code>*</code> 两边，表示被指物和指针都是常量</li>
-<li>STL 的迭代器可以视为指针，<code>const std::vector&lt;int&gt;::iterator iter</code> 效果等同于 <code>T* const</code>，<code>std::vector&lt;int&gt;::const_iterator cIter</code> 效果等同于 <code>const T*</code></li>
-<li>设置函数返回对象为 const 可以排除一些不必要的安全隐患</li>
-<li>类的成员函数可以通过（函数名之后，函数体之前的那个） <code>const</code> 重载，分别针对 const/non-const 对象</li>
-<li>bitwise const 和 logical const 的区别，通过 <code>mutable</code> 实现 logical const</li>
-<li>当成员函数的 const/non-const 版本有同样的实现时，可以将实现代码写在 const 版本中，而在 non-const 版本中调用即可，但是需要注意<strong>转换类型</strong>，并且一定要小心，避免安全隐患。</li>
-</ol>
-<pre><code>class TextBlock {
- public:
-  const char&amp; operator[](std::size_t position) const { return text[position]; }
-  char&amp; operator[](std::size_t position) {
-    return const_cast&lt;char&amp;&gt;(static_cast&lt;const TextBlock&amp;&gt;(*this)[position]);
-  }
-  // ......
-};
-</code></pre>
-<h2 id="term-04确定对象被使用前已被初始化">Term 04：确定对象被使用前已被初始化</h2>
-<ol>
-<li>手动初始化内置型对象，比如 <code>int i = 0;</code></li>
-<li>构造函数使用成员初值表进行初始化</li>
-<li>为免除“跨编译单元初始化顺序不确定”问题，使用 local static 对象替换 static 对象</li>
-</ol>
-
-            </div>
-          </article>
-        </div>
-        <div class="paper" data-aos="fade-in">
+          <h2 class="current-tag">标签: 算法</h2>
           
-        </div>
-        
-      </div>
+  <article class="article">
+    <h2 class="article-title">
+      <a href="https://Miaite.github.io/post/M4PxdwkA_/">快排的四种写法</a>
+    </h2>
+    <p class="article-meta">
+      2021-03-17
+      
+        <a href="https://Miaite.github.io/tag/Ardgjj5BS/" class="badge warning">
+          算法
+        </a>
+      
+    </p>
+    <p class="text-lead">
+      <p>快速排序是常见的排序算法，可分为 partition 和 recursion 两个部分，至于 partition 的具体实现，有一些不同的方式可选。</p>
 
+    </p>
+    <div class="row">
+      <a href="https://Miaite.github.io/post/M4PxdwkA_/" class="readmore-link">
+        <button>
+          Read More
+        </button>
+      </a>
+    </div>
+  </article>
+
+
+        </div>
+        <div class="row flex-edges">
+  
+  
+</div>
+
+      </div>
       <div class="sm-12 md-4 col sidebar">
   <div class="paper info-container">
     <img src="https://Miaite.github.io/images/avatar.png?v=1615959072756" class="no-responsive avatar">
@@ -250,11 +214,11 @@ class GamePlayer{
     </div>
     <div class="row">
       
-        <a href="https://Miaite.github.io/tag/Ardgjj5BS/" class="badge secondary">
+        <a href="https://Miaite.github.io/tag/Ardgjj5BS/" class="badge success">
           算法
         </a>
       
-        <a href="https://Miaite.github.io/tag/U4pTdc1co/" class="badge secondary">
+        <a href="https://Miaite.github.io/tag/U4pTdc1co/" class="badge warning">
           C++从入门到入坟
         </a>
       
@@ -264,7 +228,6 @@ class GamePlayer{
     Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | <a class="rss" href="https://Miaite.github.io/atom.xml" target="_blank">RSS</a>
   </div>
 </div>
-
 
     </div>
 
