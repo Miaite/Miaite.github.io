@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://Miaite.github.io</id>
     <title>A Blog of Miaite</title>
-    <updated>2021-03-18T02:56:28.356Z</updated>
+    <updated>2021-04-24T08:12:54.166Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://Miaite.github.io"/>
     <link rel="self" href="https://Miaite.github.io/atom.xml"/>
@@ -10,6 +10,56 @@
     <logo>https://Miaite.github.io/images/avatar.png</logo>
     <icon>https://Miaite.github.io/favicon.ico</icon>
     <rights>All rights reserved 2021, A Blog of Miaite</rights>
+    <entry>
+        <title type="html"><![CDATA[More Effective C++ 笔记（01）]]></title>
+        <id>https://Miaite.github.io/post/sGv0WnrMz/</id>
+        <link href="https://Miaite.github.io/post/sGv0WnrMz/">
+        </link>
+        <updated>2021-04-21T10:27:52.000Z</updated>
+        <summary type="html"><![CDATA[<p>本篇笔记包含 Term 1~8。</p>
+]]></summary>
+        <content type="html"><![CDATA[<p>本篇笔记包含 Term 1~8。</p>
+<!-- more -->
+<h2 id="term-1仔细区别-pointers和-references">Term 1：仔细区别 pointers和 references</h2>
+<p>引用也是由指针实现的，引用的特别之处在于：</p>
+<ol>
+<li>必须初始化，不会为空</li>
+<li>引用类似于 <code>Type* cosnt ptr</code>，永远指向初始化时的对象</li>
+<li>引用是一种别名，不需要用 <code>*</code> dereference</li>
+<li>重载操作符时使用指针可能会造成语义混淆，应当使用引用</li>
+</ol>
+<h2 id="term-2最好使用-c-转型操作符">Term 2：最好使用 C++ 转型操作符</h2>
+<ol>
+<li><code>static_cast</code> 普通转换</li>
+<li><code>const_cast</code> 去掉 const 属性，但仍然不能改变常量值，只是为了满足参数调用的类型</li>
+<li><code>dynamic_cast</code> 把指向基类的指针/引用转换成指向其派生类或其兄弟类的指针/引用，失败则返回空指针或者抛出异常</li>
+<li><code>reinterpret_cast</code> 转换函数指针（不推荐使用，没有跨平台标准保证）</li>
+</ol>
+<h2 id="term-3绝对不要以多态polymorphically方式处理数组">Term 3：绝对不要以多态（polymorphically）方式处理数组</h2>
+<p>假设有这样一个函数，参数为基类对象的数组，如果使用派生类对象数组作为参数，调用这个函数，将会出现无法预期的错误，因为 <code>sizeof(基类对象) != sizeof(派生类对象)</code></p>
+<h2 id="term-4非必要不提供-default-constructor">Term 4：非必要不提供 default constructor</h2>
+<p>如果一个类不提供无参的构造函数，可能造成需要需要调用无参构造函数情况下的错乱（比如声明对象数组或者模板类内部的 new）。但是在良好设计的情况下，不提供无参的构造函数，可以保证每一个对象都得到了有效初始化，不需要在使用对象时进行检查。</p>
+<h2 id="term-5对定制的类型转换函数保持警觉">Term 5：对定制的“类型转换函数”保持警觉</h2>
+<p>应当避免编译器的隐式类型转换：</p>
+<ol>
+<li>对提供单参数（可能包含默认参数）的构造函数使用 <code>explicit</code> 关键字</li>
+<li>不提供隐式类型转换操作符方法（形如 <code>operator double() const{}</code>），提供单独的方法。</li>
+</ol>
+<h2 id="term-6区别-incrementdecrement-操作符的前置prefix和后置postfix形式">Term 6：区别 increment/decrement 操作符的前置（prefix）和后置（postfix）形式</h2>
+<p>也就是 C++ 中令人深恶痛绝的 <code>i++</code> 和 <code>++i</code>，在重载操作符时只维护前缀形式即可，后缀形式自动与前缀形式的行为一致。前缀形式返回该类型引用，后缀形式返回 const 该类型。</p>
+<h2 id="term-7千万不要重载-和-操作符">Term 7：千万不要重载 <code>&amp;&amp;</code>，<code>||</code> 和 <code>,</code> 操作符</h2>
+<p>除了 Term 中提到的操作符外，还有很多操作符不应该被重载，否者会造成语义混淆。在重载操作符时应该考虑清楚，这是为了方便编写程序，并且修改的部分是可控的（比如 <code>new</code>、<code>&lt;=</code>、<code>++</code>）</p>
+<h2 id="term-8理解各种不同含义的-new-和-delete">Term 8：理解各种不同含义的 new 和 delete</h2>
+<p>在使用 new operator 的时候，实际上是执行了三个步骤:</p>
+<ol>
+<li>调用类中的 operator new 分配内存</li>
+<li>调用构造函数生成对象</li>
+<li>返回指针</li>
+</ol>
+<p>如果你希望将对象产生于 heap，请使用 newoperator。它不但分配内存而且为该对象调用一个constructor。如果你只是打算分配内存，请调用operator new，那就没有任何 constructor 会被调用。如果你打算在 heap objects 产生时自己决定内存分配方式，请写一个自己的 operator new，并使用 new operator，它将会自动调用你所写的 operator new。如果你打算在已分配（并拥有指针）的内存中构造对象，请使用 placement new。placement new 的使用形式：<code>MyClass * pClass = new(buf) MyClass;</code>。</p>
+<p>如果交给 placement new 的原始内存（raw memory）本身是动态分配而得（通过某种非传统做法），那么你最终还是得释放那块内存，以免内存泄漏。</p>
+]]></content>
+    </entry>
     <entry>
         <title type="html"><![CDATA[快排的四种写法]]></title>
         <id>https://Miaite.github.io/post/M4PxdwkA_/</id>
@@ -21,7 +71,7 @@
         <content type="html"><![CDATA[<p>快速排序是常见的排序算法，可分为 partition 和 recursion 两个部分，至于 partition 的具体实现，有一些不同的方式可选。</p>
 <!-- more -->
 <p>本文使用 Python 且不对数据的合法性进行判断，前提要求是对一个列表类型的数组 <code>nums</code> 进行原地排序。</p>
-<pre><code class="language-Python"># 先来一个最简单的
+<pre><code class="language-Python"># 先来一个最简单的，其实用的是 Timsort
 nums.sort()
 </code></pre>
 <h3 id="方法1填坑">方法1：填坑</h3>
