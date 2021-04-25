@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://Miaite.github.io</id>
     <title>A Blog of Miaite</title>
-    <updated>2021-04-24T08:12:54.166Z</updated>
+    <updated>2021-04-25T07:36:58.960Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://Miaite.github.io"/>
     <link rel="self" href="https://Miaite.github.io/atom.xml"/>
@@ -10,6 +10,43 @@
     <logo>https://Miaite.github.io/images/avatar.png</logo>
     <icon>https://Miaite.github.io/favicon.ico</icon>
     <rights>All rights reserved 2021, A Blog of Miaite</rights>
+    <entry>
+        <title type="html"><![CDATA[More Effective C++ 笔记（02）]]></title>
+        <id>https://Miaite.github.io/post/A-SVzsdLw/</id>
+        <link href="https://Miaite.github.io/post/A-SVzsdLw/">
+        </link>
+        <updated>2021-04-22T02:18:06.000Z</updated>
+        <summary type="html"><![CDATA[<p>本篇笔记包含 Term 9~15。</p>
+]]></summary>
+        <content type="html"><![CDATA[<p>本篇笔记包含 Term 9~15。</p>
+<!-- more -->
+<h2 id="term-9利用-destructors-避免泄漏资源">Term 9：利用 destructors 避免泄漏资源</h2>
+<p>按照 RAII，将资源放入对象当中，通过析构函数可以保证资源被正确回收。通常情况只需要使用智能指针即可，即使发生异常也能保证不出现资源泄露。</p>
+<h2 id="term-10在-constructors-内阻止资源泄漏resource-leak">Term 10：在 constructors 内阻止资源泄漏（resource leak）</h2>
+<p>如果构造函数在执行过程中发生异常，可能会出现资源泄露，此时需要捕获异常并处理。简单来说，使用智能指针就好了。</p>
+<h2 id="term-11禁止异常exceptions流出-destructors-之外">Term 11：禁止异常（exceptions）流出 destructors 之外</h2>
+<ol>
+<li>可以避免 terminate 函数在 exception 传播过程的栈展开（stack-unwinding）机制中被调用</li>
+<li>可以协助确保 destructors 完成其应该完成的所有事情</li>
+</ol>
+<h2 id="term-12了解抛出一个-exception与传递一个参数或调用一个虚函数之间的差异">Term 12：了解“抛出一个 exception”与“传递一个参数”或“调用一个虚函数”之间的差异</h2>
+<ol>
+<li>exception objects 总是会被复制，如果以 by value 方式捕捉，它们甚至被复制两次。至于传递给函数参数的对象则不一定得复制。</li>
+<li>“被抛出成为 exceptions”的对象，其被允许的类型转换动作，比“被传递到函数去”的对象少。</li>
+<li>catch 子句以其“出现于源代码的顺序”被编译器检验比对，其中第一个匹配成功者便执行；而当我们以某对象调用一个虚函数，被选中执行的是那个“与对象类型最佳吻合”的函数，不论它是不是源代码所列的第一个。</li>
+<li>“exceptions 与 catch 子句相匹配”的过程中，仅有两种转换可以发生。第一种是“继承架构中的类转换（inheritance-based conversions）”。第二个允许发生的转换是从一个“有型指针”转为“无型指针”，所以一个针对 const void＊ 指针而设计的 catch子句，可捕捉任何指针类型的 exception。</li>
+</ol>
+<h2 id="term-13以-by-reference-方式捕捉-exceptions">Term 13：以 by reference 方式捕捉 exceptions</h2>
+<ol>
+<li>by pointer 方式捕捉不能保证指针指向有效对象，该对象可能离开作用域就被销毁</li>
+<li>by value 方式复制两次效率低下，此外它也会引起切割（slicing）问题，因为 derived class exception objects被捕捉并被视为 base classexceptions 者，将失去其派生成分</li>
+</ol>
+<h2 id="term-14明智运用-exception-specifications">Term 14：明智运用 exception specifications</h2>
+<p>exception specifications 对于“函数希望抛出什么样的 exceptions”提供了卓越的说明。而在“违反 exception specification的下场十分悲惨，以至于需要立刻结束程序”的形势下，它们提供了默认行为。但是虽然有这些好处，它们相对也有一些缺点，包括编译器只对它们做局部性检验、很容易被不经意地违反等。此外它们可能会妨碍更上层的 exception 处理函数处理未预期的 exceptions——即使更上层的处理函数已经知道该怎么做。</p>
+<h2 id="term-15了解异常处理exception-handling的成本">Term 15：了解异常处理（exception handling）的成本</h2>
+<p>异常处理需要额外的成本，需要谨慎决定使用异常处理机制。</p>
+]]></content>
+    </entry>
     <entry>
         <title type="html"><![CDATA[More Effective C++ 笔记（01）]]></title>
         <id>https://Miaite.github.io/post/sGv0WnrMz/</id>
@@ -569,62 +606,6 @@ processWidget(pw, priority());
 <li>copy 构造函数和 copy 赋值操作符会执行拷贝</li>
 <li>拷贝对象时应该把每个成员变量都考虑到，并且调用对应的 base class 的函数</li>
 <li>copy 构造函数和 copy 赋值操作符之间<strong>不能</strong>互相调用，可以考虑新创建一个成员函数维护冗余代码，然后在 copy 操作时调用</li>
-</ol>
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[Effective C++ 笔记（01）]]></title>
-        <id>https://Miaite.github.io/post/UyR9S6D5b/</id>
-        <link href="https://Miaite.github.io/post/UyR9S6D5b/">
-        </link>
-        <updated>2020-11-03T11:22:15.000Z</updated>
-        <summary type="html"><![CDATA[<p>就学习难度而言，C++是一门臭名昭著的编程语言。《Effective C++》总结了 55 条 C++(98/03)的开发准则，供开发者学习参考。本篇笔记包含 Term 01~04，我也依据 Modern C++ 的改变，对其中某些细节进行了修订。</p>
-]]></summary>
-        <content type="html"><![CDATA[<p>就学习难度而言，C++是一门臭名昭著的编程语言。《Effective C++》总结了 55 条 C++(98/03)的开发准则，供开发者学习参考。本篇笔记包含 Term 01~04，我也依据 Modern C++ 的改变，对其中某些细节进行了修订。</p>
-<!-- more -->
-<h2 id="term-01视-c-为一个语言联邦">Term 01：视 C++ 为一个语言联邦</h2>
-<p>这一点说起来容易（做起来难）。简单讲，C++ 的语言设计其实有四个部分 ：（兼容）C、面向对象、泛型和模板、STL，这四个部分相互关联却又在设计思想上相对独立。每一个部分都会有一些不同的准则，在 C 中的常用思路不一定适合在泛型和模板中使用。</p>
-<p>一般来说，泛型和模板这一部分是 C++ 程序员最薄弱的，需要特别注意。</p>
-<h2 id="term-02尽量以-const-enum-inline-替换-define">Term 02：尽量以 const, enum, inline 替换 #define</h2>
-<ol>
-<li>对于常量，使用 const 或者 enum hack 代替</li>
-<li>对于形似函数的宏定义，使用 inline 函数代替（可能会用到模板）</li>
-</ol>
-<pre><code>// enum hack 的例子：
-class Game {
-    private:
-        static const int GameTurn = 10;
-        int scores[GameTurn];
-};    //不支持类内初始化的编译器报错
-class GamePlayer{
-    private:
-        enum {NumTurns = 5};
-        int scores[NumTurns];
-};    //不支持类内初始化的编译器也能编译通过
-</code></pre>
-<h2 id="term-03尽可能使用-const">Term 03：尽可能使用 const</h2>
-<ol>
-<li>const 和指针：记住 <code>const</code> 出现在 <code>*</code> 左边，表示被指物是常量；如果出现在 <code>*</code> 右边，表示指针自身是常量；如果出现在 <code>*</code> 两边，表示被指物和指针都是常量</li>
-<li>STL 的迭代器可以视为指针，<code>const std::vector&lt;int&gt;::iterator iter</code> 效果等同于 <code>T* const</code>，<code>std::vector&lt;int&gt;::const_iterator cIter</code> 效果等同于 <code>const T*</code></li>
-<li>设置函数返回对象为 const 可以排除一些不必要的安全隐患</li>
-<li>类的成员函数可以通过（函数名之后，函数体之前的那个） <code>const</code> 重载，分别针对 const/non-const 对象</li>
-<li>bitwise const 和 logical const 的区别，通过 <code>mutable</code> 实现 logical const</li>
-<li>当成员函数的 const/non-const 版本有同样的实现时，可以将实现代码写在 const 版本中，而在 non-const 版本中调用即可，但是需要注意<strong>转换类型</strong>，并且一定要小心，避免安全隐患。</li>
-</ol>
-<pre><code>class TextBlock {
- public:
-  const char&amp; operator[](std::size_t position) const { return text[position]; }
-  char&amp; operator[](std::size_t position) {
-    return const_cast&lt;char&amp;&gt;(static_cast&lt;const TextBlock&amp;&gt;(*this)[position]);
-  }
-  // ......
-};
-</code></pre>
-<h2 id="term-04确定对象被使用前已被初始化">Term 04：确定对象被使用前已被初始化</h2>
-<ol>
-<li>手动初始化内置型对象，比如 <code>int i = 0;</code></li>
-<li>构造函数使用成员初值表进行初始化</li>
-<li>为免除“跨编译单元初始化顺序不确定”问题，使用 local static 对象替换 static 对象</li>
 </ol>
 ]]></content>
     </entry>
