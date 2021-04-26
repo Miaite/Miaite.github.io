@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://Miaite.github.io</id>
     <title>A Blog of Miaite</title>
-    <updated>2021-04-26T07:23:23.345Z</updated>
+    <updated>2021-04-26T12:52:02.706Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://Miaite.github.io"/>
     <link rel="self" href="https://Miaite.github.io/atom.xml"/>
@@ -45,7 +45,7 @@
 <h2 id="term-23考虑使用其他程序库代替标准库">Term 23：考虑使用其他程序库代替标准库</h2>
 <p>例如 iostream 程序库具有类型安全（type-safe）特性，并且可扩充。然而在效率方面，iostream 通常表现得比 stdio 差，因为 stdio 的可执行文件通常比 iostreams更小也更快。</p>
 <h2 id="term-24了解-virtual-functions-multiple-inheritance-virtualbase-classes-runtime-type-identification的成本">Term 24：了解 virtual functions、multiple inheritance、virtualbase classes、runtime type identification的成本</h2>
-<p>当一个虚函数被调用，执行的代码必须对应于“调用者（对象）的动态类型”。对象的 pointer 或reference，其类型是无形的，编译器如何很有效率地提供这样的行为呢？大部分编译器使用所谓的virtual tables 和 virtual table pointers——此二者常被简写为 vtbls 和 vptrs。每一个类会维护自己的 vtbls 和 vptrs，派生类不仅有自己的 vtbls 内容，还包含基类的 vtbls 内容。当继承关系变得复杂时，vtbls 会使对象的内存空间大量增加。另外，使用虚函数，inline 便会失效，因为在编译阶段无法知道要调用哪一个具体函数。</p>
+<p>当一个虚函数被调用，执行的代码必须对应于“调用者（对象）的动态类型”。对象的 pointer 或reference，其类型是无形的，编译器如何很有效率地提供这样的行为呢？大部分编译器使用所谓的 virtual tables 和 virtual table pointers——此二者常被简写为 vtbls 和 vptrs。每一个类会维护自己的 vtbls 和 vptrs，派生类不仅有自己的 vtbls 内容，还包含基类的 vtbls 内容。当继承关系变得复杂时，vptrs 会使对象的内存空间大量增加。另外，使用虚函数，inline 便会失效，因为在编译阶段无法知道要调用哪一个具体函数。</p>
 ]]></content>
     </entry>
     <entry>
