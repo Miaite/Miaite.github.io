@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" >
 
-<title>Effective C++ 笔记（01） | A Blog of Miaite</title>
+<title>More Effective C++ 笔记（03） | A Blog of Miaite</title>
 <meta name="description" content="一些流水账，技术笔记为主">
 
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
@@ -81,9 +81,9 @@
       <div class="sm-12 md-8 col">
         <div class="paper">
           <article class="article">
-            <h1>Effective C++ 笔记（01）</h1>
+            <h1>More Effective C++ 笔记（03）</h1>
             <p class="article-meta">
-              2020-11-03
+              2021-04-26
               
                 <a href="https://Miaite.github.io/tag/U4pTdc1co/" class="badge ">
                   C++从入门到入坟
@@ -91,60 +91,53 @@
               
             </p>
             
-              <img src="https://img3.doubanio.com/view/subject/l/public/s4647091.jpg" alt="Effective C++ 笔记（01）">
+              <img src="https://img1.doubanio.com/view/subject/s/public/s28272918.jpg" alt="More Effective C++ 笔记（03）">
             
             <div class="post-content">
-              <p>就学习难度而言，C++是一门臭名昭著的编程语言。《Effective C++》总结了 55 条 C++(98/03)的开发准则，供开发者学习参考。本篇笔记包含 Term 01~04，我也依据 Modern C++ 的改变，对其中某些细节进行了修订。</p>
+              <p>本篇笔记包含 Term 16~24。</p>
 <!-- more -->
-<h2 id="term-01视-c-为一个语言联邦">Term 01：视 C++ 为一个语言联邦</h2>
-<p>这一点说起来容易（做起来难）。简单讲，C++ 的语言设计其实有四个部分 ：（兼容）C、面向对象、泛型和模板、STL，这四个部分相互关联却又在设计思想上相对独立。每一个部分都会有一些不同的准则，在 C 中的常用思路不一定适合在泛型和模板中使用。</p>
-<p>一般来说，泛型和模板这一部分是 C++ 程序员最薄弱的，需要特别注意。</p>
-<h2 id="term-02尽量以-const-enum-inline-替换-define">Term 02：尽量以 const, enum, inline 替换 #define</h2>
+<h2 id="term-16谨记-80-20-法则">Term 16：谨记 80-20 法则</h2>
+<p>一个程序 80%的资源用于 20%的代码身上。依靠经验和程序分析器（program profiler），判断程序的瓶颈所在。</p>
+<h2 id="term-17考虑使用-lazy-evaluation缓式评估">Term 17：考虑使用 lazy evaluation（缓式评估）</h2>
+<p>一个例子，linux 中创建子进程的时候，不会将父进程的资源复制给子进程，而是让子进程共享父进程的资源。如果我们只读取而没有修改数据，则子进程永远不需要复制一份资源，当需要修改数据时，内核才会为子进程复制一份资源。</p>
+<p>不仅是复制，矩阵运算，数据库查询等等，可能我们并不需要全部的结果，只需要一部分即可。</p>
+<h2 id="term-18分期摊还预期的计算成本">Term 18：分期摊还预期的计算成本</h2>
+<p>一个例子，Python 中的 list 的 length 属性是作为变量存储在对象当中，并且在数据长度发生变化时同步更新，这样使得 <code>len(list)</code> 的时间复杂度为 O(1)。</p>
+<h2 id="term-19了解临时对象的来源">Term 19：了解临时对象的来源</h2>
 <ol>
-<li>对于常量，使用 const 或者 enum hack 代替</li>
-<li>对于形似函数的宏定义，使用 inline 函数代替（可能会用到模板）</li>
+<li>当对象以 by value （传值）方式传递，或是当对象被传递给一个reference-to-const 参数时，编译器会创建一个临时对象使得函数成功调用</li>
+<li>函数 by value 返回一个对象时，也是临时变量</li>
+<li>字面量也是临时变量</li>
 </ol>
-<pre><code class="language-C++">// enum hack 的例子：
-class Game {
-    private:
-        static const int GameTurn = 10;
-        int scores[GameTurn];
-};    //不支持类内初始化的编译器报错
-class GamePlayer{
-    private:
-        enum {NumTurns = 5};
-        int scores[NumTurns];
-};    //不支持类内初始化的编译器也能编译通过
+<h2 id="term-20协助完成返回值优化rvo">Term 20：协助完成“返回值优化（RVO）”</h2>
+<p>我们知道函数不应该返回函数中创建的变量的指针或者引用，只能 by value 返回。</p>
+<pre><code class="language-c++">return Rational(lhs.numerator() * rhs.numerator(), lhs.denominator() * rhs.denominator());
 </code></pre>
-<h2 id="term-03尽可能使用-const">Term 03：尽可能使用 const</h2>
-<ol>
-<li>const 和指针：记住 <code>const</code> 出现在 <code>*</code> 左边，表示被指物是常量；如果出现在 <code>*</code> 右边，表示指针自身是常量；如果出现在 <code>*</code> 两边，表示被指物和指针都是常量</li>
-<li>STL 的迭代器可以视为指针，<code>const std::vector&lt;int&gt;::iterator iter</code> 效果等同于 <code>T* const</code>，<code>std::vector&lt;int&gt;::const_iterator cIter</code> 效果等同于 <code>const T*</code></li>
-<li>设置函数返回对象为 const 可以排除一些不必要的安全隐患</li>
-<li>类的成员函数可以通过（函数名之后，函数体之前的那个） <code>const</code> 重载，分别针对 const/non-const 对象</li>
-<li>bitwise const 和 logical const 的区别，通过 <code>mutable</code> 实现 logical const</li>
-<li>当成员函数的 const/non-const 版本有同样的实现时，可以将实现代码写在 const 版本中，而在 non-const 版本中调用即可，但是需要注意<strong>转换类型</strong>，并且一定要小心，避免安全隐患。</li>
-</ol>
-<pre><code class="language-C++">class TextBlock {
- public:
-  const char&amp; operator[](std::size_t position) const { return text[position]; }
-  char&amp; operator[](std::size_t position) {
-    return const_cast&lt;char&amp;&gt;(static_cast&lt;const TextBlock&amp;&gt;(*this)[position]);
-  }
-  // ......
-};
-</code></pre>
-<h2 id="term-04确定对象被使用前已被初始化">Term 04：确定对象被使用前已被初始化</h2>
-<ol>
-<li>手动初始化内置型对象，比如 <code>int i = 0;</code></li>
-<li>构造函数使用成员初值表进行初始化</li>
-<li>为免除“跨编译单元初始化顺序不确定”问题，使用 local static 对象替换 static 对象</li>
-</ol>
+<p>如果我们以类似上面这种形式返回一个构造函数的调用，那么结果不会出现临时变量再被复制一次的情况，这种做法叫做返回值优化，已经被编译器广泛使用，我们不需要操心去编写构造函数形式的返回值了。甚至在现代 C++ 中我们还可以使用右值引用直接绑定临时变量。</p>
+<h2 id="term-21利用重载技术overload避免隐式类型转换implicittype-conversions">Term 21：利用重载技术（overload）避免隐式类型转换（implicittype conversions）</h2>
+<p>为了避免函数调用（包括操作符函数）时隐式类型转换产生临时变量，我们可以编写多个函数，提供不同的参数类型完成相同逻辑的操作。</p>
+<h2 id="term-22考虑以操作符复合形式op取代其独身形式op">Term 22：考虑以操作符复合形式（op=）取代其独身形式（op）</h2>
+<p>操作符的“复合版本”（例如，operator+=）比其对应的“独身版本”（例如，operator+）有着更高效率的倾向，因为不需要创建对象存放结果。身为一位程序库设计者，你应该两者都提供，通常的做法是在“独身版本”中调用“复合版本”，提高代码复用；身为一位应用软件开发者，如果性能是重要因素的话，你应该考虑以“复合版本”操作符取代其“独身版本”。</p>
+<h2 id="term-23考虑使用其他程序库代替标准库">Term 23：考虑使用其他程序库代替标准库</h2>
+<p>例如 iostream 程序库具有类型安全（type-safe）特性，并且可扩充。然而在效率方面，iostream 通常表现得比 stdio 差，因为 stdio 的可执行文件通常比 iostreams更小也更快。</p>
+<h2 id="term-24了解-virtual-functions-multiple-inheritance-virtualbase-classes-runtime-type-identification的成本">Term 24：了解 virtual functions、multiple inheritance、virtualbase classes、runtime type identification的成本</h2>
+<p>当一个虚函数被调用，执行的代码必须对应于“调用者（对象）的动态类型”。对象的 pointer 或reference，其类型是无形的，编译器如何很有效率地提供这样的行为呢？大部分编译器使用所谓的virtual tables 和 virtual table pointers——此二者常被简写为 vtbls 和 vptrs。每一个类会维护自己的 vtbls 和 vptrs，派生类不仅有自己的 vtbls 内容，还包含基类的 vtbls 内容。当继承关系变得复杂时，vtbls 会使对象的内存空间大量增加。另外，使用虚函数，inline 便会失效，因为在编译阶段无法知道要调用哪一个具体函数。</p>
 
             </div>
           </article>
         </div>
         <div class="paper" data-aos="fade-in">
+          
+            <div class="next-post">
+              <div class="next">
+                下一篇
+              </div>
+              <a href="https://Miaite.github.io/post/A-SVzsdLw/">
+                <h3 class="post-title">
+                  More Effective C++ 笔记（02）
+                </h3>
+              </a>
+            </div>
           
         </div>
         
@@ -256,11 +249,11 @@ class GamePlayer{
     </div>
     <div class="row">
       
-        <a href="https://Miaite.github.io/tag/U4pTdc1co/" class="badge secondary">
+        <a href="https://Miaite.github.io/tag/U4pTdc1co/" class="badge ">
           C++从入门到入坟
         </a>
       
-        <a href="https://Miaite.github.io/tag/Ardgjj5BS/" class="badge ">
+        <a href="https://Miaite.github.io/tag/Ardgjj5BS/" class="badge success">
           算法
         </a>
       

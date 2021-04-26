@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://Miaite.github.io</id>
     <title>A Blog of Miaite</title>
-    <updated>2021-04-25T07:36:58.960Z</updated>
+    <updated>2021-04-26T07:23:23.345Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://Miaite.github.io"/>
     <link rel="self" href="https://Miaite.github.io/atom.xml"/>
@@ -11,11 +11,49 @@
     <icon>https://Miaite.github.io/favicon.ico</icon>
     <rights>All rights reserved 2021, A Blog of Miaite</rights>
     <entry>
+        <title type="html"><![CDATA[More Effective C++ 笔记（03）]]></title>
+        <id>https://Miaite.github.io/post/LQ41yj2Me/</id>
+        <link href="https://Miaite.github.io/post/LQ41yj2Me/">
+        </link>
+        <updated>2021-04-26T07:21:52.000Z</updated>
+        <summary type="html"><![CDATA[<p>本篇笔记包含 Term 16~24。</p>
+]]></summary>
+        <content type="html"><![CDATA[<p>本篇笔记包含 Term 16~24。</p>
+<!-- more -->
+<h2 id="term-16谨记-80-20-法则">Term 16：谨记 80-20 法则</h2>
+<p>一个程序 80%的资源用于 20%的代码身上。依靠经验和程序分析器（program profiler），判断程序的瓶颈所在。</p>
+<h2 id="term-17考虑使用-lazy-evaluation缓式评估">Term 17：考虑使用 lazy evaluation（缓式评估）</h2>
+<p>一个例子，linux 中创建子进程的时候，不会将父进程的资源复制给子进程，而是让子进程共享父进程的资源。如果我们只读取而没有修改数据，则子进程永远不需要复制一份资源，当需要修改数据时，内核才会为子进程复制一份资源。</p>
+<p>不仅是复制，矩阵运算，数据库查询等等，可能我们并不需要全部的结果，只需要一部分即可。</p>
+<h2 id="term-18分期摊还预期的计算成本">Term 18：分期摊还预期的计算成本</h2>
+<p>一个例子，Python 中的 list 的 length 属性是作为变量存储在对象当中，并且在数据长度发生变化时同步更新，这样使得 <code>len(list)</code> 的时间复杂度为 O(1)。</p>
+<h2 id="term-19了解临时对象的来源">Term 19：了解临时对象的来源</h2>
+<ol>
+<li>当对象以 by value （传值）方式传递，或是当对象被传递给一个reference-to-const 参数时，编译器会创建一个临时对象使得函数成功调用</li>
+<li>函数 by value 返回一个对象时，也是临时变量</li>
+<li>字面量也是临时变量</li>
+</ol>
+<h2 id="term-20协助完成返回值优化rvo">Term 20：协助完成“返回值优化（RVO）”</h2>
+<p>我们知道函数不应该返回函数中创建的变量的指针或者引用，只能 by value 返回。</p>
+<pre><code class="language-c++">return Rational(lhs.numerator() * rhs.numerator(), lhs.denominator() * rhs.denominator());
+</code></pre>
+<p>如果我们以类似上面这种形式返回一个构造函数的调用，那么结果不会出现临时变量再被复制一次的情况，这种做法叫做返回值优化，已经被编译器广泛使用，我们不需要操心去编写构造函数形式的返回值了。甚至在现代 C++ 中我们还可以使用右值引用直接绑定临时变量。</p>
+<h2 id="term-21利用重载技术overload避免隐式类型转换implicittype-conversions">Term 21：利用重载技术（overload）避免隐式类型转换（implicittype conversions）</h2>
+<p>为了避免函数调用（包括操作符函数）时隐式类型转换产生临时变量，我们可以编写多个函数，提供不同的参数类型完成相同逻辑的操作。</p>
+<h2 id="term-22考虑以操作符复合形式op取代其独身形式op">Term 22：考虑以操作符复合形式（op=）取代其独身形式（op）</h2>
+<p>操作符的“复合版本”（例如，operator+=）比其对应的“独身版本”（例如，operator+）有着更高效率的倾向，因为不需要创建对象存放结果。身为一位程序库设计者，你应该两者都提供，通常的做法是在“独身版本”中调用“复合版本”，提高代码复用；身为一位应用软件开发者，如果性能是重要因素的话，你应该考虑以“复合版本”操作符取代其“独身版本”。</p>
+<h2 id="term-23考虑使用其他程序库代替标准库">Term 23：考虑使用其他程序库代替标准库</h2>
+<p>例如 iostream 程序库具有类型安全（type-safe）特性，并且可扩充。然而在效率方面，iostream 通常表现得比 stdio 差，因为 stdio 的可执行文件通常比 iostreams更小也更快。</p>
+<h2 id="term-24了解-virtual-functions-multiple-inheritance-virtualbase-classes-runtime-type-identification的成本">Term 24：了解 virtual functions、multiple inheritance、virtualbase classes、runtime type identification的成本</h2>
+<p>当一个虚函数被调用，执行的代码必须对应于“调用者（对象）的动态类型”。对象的 pointer 或reference，其类型是无形的，编译器如何很有效率地提供这样的行为呢？大部分编译器使用所谓的virtual tables 和 virtual table pointers——此二者常被简写为 vtbls 和 vptrs。每一个类会维护自己的 vtbls 和 vptrs，派生类不仅有自己的 vtbls 内容，还包含基类的 vtbls 内容。当继承关系变得复杂时，vtbls 会使对象的内存空间大量增加。另外，使用虚函数，inline 便会失效，因为在编译阶段无法知道要调用哪一个具体函数。</p>
+]]></content>
+    </entry>
+    <entry>
         <title type="html"><![CDATA[More Effective C++ 笔记（02）]]></title>
         <id>https://Miaite.github.io/post/A-SVzsdLw/</id>
         <link href="https://Miaite.github.io/post/A-SVzsdLw/">
         </link>
-        <updated>2021-04-22T02:18:06.000Z</updated>
+        <updated>2021-04-25T06:38:46.000Z</updated>
         <summary type="html"><![CDATA[<p>本篇笔记包含 Term 9~15。</p>
 ]]></summary>
         <content type="html"><![CDATA[<p>本篇笔记包含 Term 9~15。</p>
@@ -187,7 +225,7 @@ def quick_sort(nums):
 <li>不返回：通常调用 abort 或 exit</li>
 </ol>
 <p>C++ 没有直接为 class 定制 new-handler 的语法，但我们仍然可以办到：</p>
-<pre><code>template &lt;typename T&gt;
+<pre><code class="language-C++">template &lt;typename T&gt;
 class NewHandlerSupport {  // mixin 风格的 base class，用以支持 class 专属的 set_new_handler
  public:
   static std::new_handler set_new_handler(std::new_handler) throw();
@@ -269,7 +307,7 @@ class Widget: public NewHandlerSupport&lt;Widget&gt; { ... } // 以自身类型�
 <li>声明 template 参数时，前缀关键字 class 和 typename 同义</li>
 <li>需要使用关键字 typename 标识嵌套从属类型名称；但不得在 base class lists（基类列）或 member initialization list 内以它作为 base class 修饰符</li>
 </ol>
-<pre><code>template &lt;typename C&gt;               // 可以使用 typename 或者 class
+<pre><code class="language-C++">template &lt;typename C&gt;               // 可以使用 typename 或者 class
 void f(const C&amp; container,          // 不能使用 typename
        typename C::iterator iter);  // 应该使用 typename
 
@@ -288,7 +326,7 @@ class Drived : public Base&lt;T&gt;::Nested {  // 不使用 typename
 <li>使用 <code>using</code></li>
 <li>明确指明使用 base class 版本（不推荐，相当于关闭了 virtual）</li>
 </ol>
-<pre><code>template &lt;typename Company&gt;
+<pre><code class="language-C++">template &lt;typename Company&gt;
 class LoggingMsgSender: public MsgSender&lt;Company&gt; {  // MsgSender 中包含 sendClear() 函数
  public:
   using MsgSender&lt;Company&gt;::sendClear;  // 2.方法
@@ -307,7 +345,7 @@ class LoggingMsgSender: public MsgSender&lt;Company&gt; {  // MsgSender 中包�
 </ol>
 <h2 id="term-45运用成员函数模板接受所有兼容类型">Term 45：运用成员函数模板接受所有兼容类型</h2>
 <p>智能指针是很好用的东西，但是存在一个问题，其模板写法不能支持隐式的类型转换。真实的指针则可以做到，示例就是派生类指针可以隐式转换为基类指针。为了在使用智能指针时也能达到此效果，需要这样编写程序：</p>
-<pre><code>template &lt;typename T&gt;
+<pre><code class="language-C++">template &lt;typename T&gt;
 class SmartPtr {
  public:
   template &lt;typename U&gt;
@@ -321,7 +359,7 @@ class SmartPtr {
 <p>跟上面的操作一样，copy 赋值操作符也可以进行泛化。需注意，函数模板不会覆盖编译器自动生成的 copy 构造函数和copy 赋值操作符。</p>
 <h2 id="term-46需要类型转换时请为模板定义非成员函数">Term 46：需要类型转换时请为模板定义非成员函数</h2>
 <p>Term 24 提到应使用 non-member 函数对所有实参进行类型转换。在使用模板时，情况有一点变化，我们仍然应该编写一个 non-member 函数，然后再 class 中定义 friend 函数并调用外面的 non-member 函数。</p>
-<pre><code>template &lt;typename T&gt; class Rational; // 声明类
+<pre><code class="language-C++">template &lt;typename T&gt; class Rational; // 声明类
 template &lt;typename T&gt;
 const Rational&lt;T&gt; doMultiply(const Rational&lt;T&gt;&amp; lhs, const Rational&lt;T&gt;&amp; rhs); // 声明 helper
 
@@ -363,7 +401,7 @@ const Rational&lt;T&gt; doMultiply(const Rational&lt;T&gt;&amp; lhs, const Ratio
 <li>derived classes 内的名称会遮掩 base classes 内的名称（包括参数类型不同的函数）。在 public 继承下不应如此。</li>
 <li>可以使用 <code>using</code> 声明式或者转交函数让被遮掩的名称恢复</li>
 </ol>
-<pre><code>class Base {
+<pre><code class="language-C++">class Base {
  public:
   virtual void mf1() = 0;
   virtual void mf1(int);
@@ -515,7 +553,7 @@ d.mf2(y);  // 不可行，被遮蔽
 <li>特化 std::swap 来调用 member 函数 swap</li>
 <li>用户使用 swap 时应当使用 <code>using std::swap;</code></li>
 </ol>
-<pre><code>template&lt;typename T&gt;
+<pre><code class="language-C++">template&lt;typename T&gt;
 void doSomething(T&amp; obj1, T&amp; obj2){
     using std::swap;    // 让 std::swap 在此函数内可见
     swap(obj1, obj2);    // 自动选择最佳的 swap 版本
@@ -553,7 +591,7 @@ void doSomething(T&amp; obj1, T&amp; obj2){
 <p>如果在 <code>new</code> 时使用了 <code>[]</code>，那么在 <code>delete</code> 时也应使用 <code>[]</code>，未使用 <code>[]</code> 时同样要准寻这个原则，以避免释放资源出错。</p>
 <h2 id="term-17以独立语句将-newed-对象置入智能指针">Term 17：以独立语句将 newed 对象置入智能指针</h2>
 <p>要以独立语句将 newed 对象置入智能指针，否则可能发生难以察觉的资源泄漏</p>
-<pre><code>// 首先有以下定义
+<pre><code class="language-C++">// 首先有以下定义
 int priority();
 void processWidget(std::tr1::shared_ptr&lt;Widget&gt; pw, int priority);
 // 几种调用
@@ -563,50 +601,6 @@ processWidget(std::tr1::shared_ptr&lt;Widget&gt; (new Widget), priority());    /
 std::tr1::shared_ptr&lt;Widget&gt; pw(new Widget);
 processWidget(pw, priority());
 </code></pre>
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[Effective C++ 笔记（02）]]></title>
-        <id>https://Miaite.github.io/post/ol7D4iZKg/</id>
-        <link href="https://Miaite.github.io/post/ol7D4iZKg/">
-        </link>
-        <updated>2020-11-05T11:45:07.000Z</updated>
-        <summary type="html"><![CDATA[<p>本篇笔记包含 Term 05~12。</p>
-]]></summary>
-        <content type="html"><![CDATA[<p>本篇笔记包含 Term 05~12。</p>
-<!-- more -->
-<h2 id="term-05了解-c-默默编写并调用了哪些函数">Term 05：了解 C++ 默默编写并调用了哪些函数</h2>
-<p>编译器会为 class 创建 default 构造函数、copy 构造函数、copy assignment 操作符以及析构函数，它们都是 public 以及 inline 的。注意到，当 copy assignment 操作符在父类中被声明为 private 或者含有 const 成员面对等情况，编译器不会自动创建 copy assignment 操作符；编译器自动创建的析构函数不是虚函数，除非继承自虚函数。</p>
-<h2 id="term-06若不想使用编译器自动生成的函数就应该明确拒绝">Term 06：若不想使用编译器自动生成的函数，就应该明确拒绝</h2>
-<p>通过 Term 05 我们知道编译器会自动生成一些成员函数，但有时我们可能不需要这种功能。解决方法：</p>
-<ol>
-<li>将该成员函数声明为 private 并且不予实现</li>
-<li>按照 1. 构建一个基类，然后去继承它</li>
-<li>使用 C++(11) 提供的 <code>=default</code> 和 <code>=delete</code> 显式启用或者禁用编译器自动版本的函数</li>
-</ol>
-<h2 id="term-07为多态基类声明-virtual-析构函数">Term 07：为多态基类声明 virtual 析构函数</h2>
-<ol>
-<li>用作多态的基类应该声明 virtual 析构函数。如果 class 带有 virtual 成员函数，应该声明 virtual 析构函数</li>
-<li>不是基类或者不是用作多态的基类，不应该声明 virtual 析构函数，比如 STL 容器</li>
-<li>以上两点可以避免内存泄漏</li>
-</ol>
-<h2 id="term-08别让异常逃离析构函数">Term 08：别让异常逃离析构函数</h2>
-<p>不应该在析构函数内抛出异常，保证析构函数能执行。将可能造成异常的部分移到另一个函数内或者交给用户自己处理。在 C++(11) 中，可以使用 <code>noexcept</code> 来限制函数，如果出现异常会直接终止程序。</p>
-<h2 id="term-09绝不在构造和析构过程中调用-virtual-函数">Term 09：绝不在构造和析构过程中调用 virtual 函数</h2>
-<p>如果在 base class 构造和析构过程中调用 virtual 函数，该函数的版本是 base class 对应的版本，不会是意图的 derived class 版本。</p>
-<h2 id="term-10令-operator-返回一个-reference-to-this">Term 10：令 operator= 返回一个 reference to *this</h2>
-<p>可以实现右结合的连锁赋值，大家都这么做，一种习惯性接口。</p>
-<h2 id="term-11在-operator-中处理自我赋值">Term 11：在 operator= 中处理“自我赋值”</h2>
-<ol>
-<li>如果将一个对象赋值给自身，会造成安全问题。处理方法可以是：通过地址判断是否是同一对象；安排安全的语句顺序；copy-and-swap</li>
-<li>任何函数，如果操作多个对象，要考虑其中某些对象其实是同一个这种情况</li>
-</ol>
-<h2 id="term-12复制对象时勿忘每一个成分">Term 12：复制对象时勿忘每一个成分</h2>
-<ol>
-<li>copy 构造函数和 copy 赋值操作符会执行拷贝</li>
-<li>拷贝对象时应该把每个成员变量都考虑到，并且调用对应的 base class 的函数</li>
-<li>copy 构造函数和 copy 赋值操作符之间<strong>不能</strong>互相调用，可以考虑新创建一个成员函数维护冗余代码，然后在 copy 操作时调用</li>
-</ol>
 ]]></content>
     </entry>
 </feed>
