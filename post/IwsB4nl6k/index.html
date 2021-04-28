@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" >
 
-<title>快排的四种写法 | A Blog of Miaite</title>
+<title>More Effective C++ 笔记（04） | A Blog of Miaite</title>
 <meta name="description" content="一些流水账，技术笔记为主">
 
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
@@ -81,80 +81,87 @@
       <div class="sm-12 md-8 col">
         <div class="paper">
           <article class="article">
-            <h1>快排的四种写法</h1>
+            <h1>More Effective C++ 笔记（04）</h1>
             <p class="article-meta">
-              2021-03-17
+              2021-04-27
               
-                <a href="https://Miaite.github.io/tag/Ardgjj5BS/" class="badge ">
-                  算法
+                <a href="https://Miaite.github.io/tag/U4pTdc1co/" class="badge secondary">
+                  C++从入门到入坟
                 </a>
               
             </p>
             
-              <img src="https://wiki.jikexueyuan.com/project/easy-learn-algorithm/images/3.1.png" alt="快排的四种写法">
+              <img src="https://img1.doubanio.com/view/subject/s/public/s28272918.jpg" alt="More Effective C++ 笔记（04）">
             
             <div class="post-content">
-              <p>快速排序是常见的排序算法，可分为 partition 和 recursion 两个部分，至于 partition 的具体实现，有一些不同的方式可选。</p>
+              <p>本篇笔记包含 Term 25~29。</p>
 <!-- more -->
-<p>本文使用 Python 且不对数据的合法性进行判断，前提要求是对一个列表类型的数组 <code>nums</code> 进行原地排序。</p>
-<pre><code class="language-Python"># 先来一个最简单的，其实用的是 Timsort
-nums.sort()
-</code></pre>
-<h3 id="方法1填坑">方法1：填坑</h3>
-<p>也就是<a href="https://book.douban.com/subject/2024655/">教材</a>上使用的方法</p>
-<pre><code class="language-Python"># 不同的快排写法，区别都在于 partition
-def partition(nums, l, r):
-    pivot = nums[l]
-    while l &lt; r:
-        while l &lt; r and nums[r] &gt; pivot:
-            r -= 1
-        nums[l] = nums[r]
-        while l &lt; r and nums[l] &lt;= pivot:
-            l += 1
-        nums[r] = nums[l]
-    nums[l] = pivot
-    return l
+<h2 id="term-25将-constructor-和-non-member-functions-虚化">Term 25：将 constructor 和 non-member functions 虚化</h2>
+<ol>
+<li>事实上构造函数不能是虚函数，但某些情况下，我们可能需要使用虚函数性质的 constructor，这时候，我们可以创建一个虚函数 <code>clone()</code>，在 <code>clone</code> 中调用构造函数。</li>
+<li>类似的，non-member functions 也不能是虚函数，但是我们可以定义一个接口函数，接收基类，再调用类中的虚函数，达成类似的效果。</li>
+</ol>
+<h2 id="term-26限制某个-class所能产生的对象数量">Term 26：限制某个 class所能产生的对象数量</h2>
+<p>最好的做法是设计一个用来计算对象个数的 Base Class，</p>
+<pre><code class="language-C++">template &lt;typename T&gt;
+class Counted {
+ public:
+  class TooManyObjects {};  // 会被抛出的异常
+  static int objectCount() { return numObjects; };
+ protected
+     :  // 构造函数和析构函数定义为 protected，并且 Counted 类应被 private 继承
+  Counted();
+  // 省略其它构造函数，实现中应调用 init()
+  ~Counted() { --numObjects; };
+ private:  // numObjects 和 maxObjects 定义为 stactic，实现对象计数
+  static int numObjects;
+  static const size_t maxObjects;
+  void init();
+};
+template &lt;typename T&gt;
+int Counted&lt;T&gt;::numObjects = 0;
+template &lt;typename T&gt;
+Counted&lt;T&gt;::Counted() {
+  init();
+}
+template &lt;typename T&gt;
+void Counted&lt;T&gt;::init() {
+  if (numObjects &gt;= maxObjects) throw TooManyObjects();
+  ++numObjects;
+}
 
-# 分治，递归
-def q_sort(nums, l, r):
-    if l &gt;= r:
-        return
-    pivot_idx = partition(nums, l, r)
-    q_sort(nums, l, pivot_idx-1)
-    q_sort(nums, pivot_idx+1, r)
-
-
-def quick_sort(nums):
-    q_sort(nums, 0, len(nums)-1)
+// 私有继承 Counted
+class Foo : private Counted&lt;Foo&gt; {
+ public:  // 通过 newFoo 间接调用构造函数
+  static Foo* newFoo();
+  using Counted&lt;Foo&gt;::objectCount;
+  ~Foo();
+ private:  // 构造函数私有
+  Foo(){};
+};
+template &lt;&gt;
+const size_t Counted&lt;Foo&gt;::maxObjects = 10;  // 继承 Counted 时指定 maxObjects
+Foo* Foo::newFoo() { return new Foo(); }
 </code></pre>
-<h3 id="方法2交换">方法2：交换</h3>
-<p>在方法1的思路上，修改为交换两个位置的元素</p>
-<pre><code class="language-Python">def partition(nums, l, r):
-    pivot = nums[l]
-    start = l
-    while l &lt; r:
-        while l &lt; r and nums[r] &gt; pivot:
-            r -= 1
-        while l &lt; r and nums[l] &lt;= pivot:
-            l += 1
-        if l &lt; r:
-            nums[l], nums[r] = nums[r], nums[l]
-    nums[start], nums[l] = nums[l], nums[start]
-    return l
-</code></pre>
-<h3 id="方法3区间维护">方法3：区间维护</h3>
-<p>《算法导论》上面的写法：通过从左到右一次遍历，两个指针，比较并交换元素来维护区间 <code>[l, i]</code> 和 <code>(i, j)</code> 中的元素小于/大于 pivot</p>
-<pre><code class="language-Python">def partition(nums, l, r):
-    pivot = nums[r]
-    i = l - 1
-    for j in range(l, r):
-        if nums[j] &lt;= pivot:
-            i += 1
-            nums[i], nums[j] = nums[j], nums[i]
-    nums[i+1], nums[r] = nums[r], nums[i+1]
-    return i+1
-</code></pre>
-<p>其实还有一些其它的写法，不过大同小异，掌握核心思路就行。</p>
+<h2 id="term-27要求或禁止对象产生于-heap-之中">Term 27：要求（或禁止）对象产生于 heap 之中</h2>
+<ol>
+<li>要求对象产生于 heap 之中：将构造或者析构函数设置为非 public 即可</li>
+<li>判断对象是否在 heap 中：编写一个基类，重载 <code>operator new</code>，调用 new 的时候把指针存入一个 list（数组，vector 之类的也可以），设置一个接口函数，判断当前对象的指针是否在 list 当中。继承这个类的派生类，通过接口可以判断对象是否在 heap 中</li>
+<li>禁止对象产生于 heap 之中：将 <code>operator new/delete</code> 设置为非 public 即可</li>
+</ol>
+<h2 id="term-28smart-pointers智能指针">Term 28：Smart Pointers（智能指针）</h2>
+<p>智能指针使得一下几件事情更加有控制权：</p>
+<ol>
+<li>构造和析构</li>
+<li>复制和赋值（Copying and Assignment）</li>
+<li>解引（Dereferencing）</li>
+</ol>
+<h2 id="term-29reference-counting引用计数">Term 29：Reference counting（引用计数）</h2>
+<p>适合使用引用计数类的场景：</p>
+<ol>
+<li>相对多数的对象共享相对少量的实值</li>
+<li>对象实值的产生或销毁成本很高，或是它们使用许多内存</li>
+</ol>
 
             </div>
           </article>
@@ -165,9 +172,9 @@ def quick_sort(nums):
               <div class="next">
                 下一篇
               </div>
-              <a href="https://Miaite.github.io/post/CvQvuRPWt/">
+              <a href="https://Miaite.github.io/post/LQ41yj2Me/">
                 <h3 class="post-title">
-                  Effective C++ 笔记（08）
+                  More Effective C++ 笔记（03）
                 </h3>
               </a>
             </div>
@@ -290,7 +297,7 @@ def quick_sort(nums):
           C++从入门到入坟
         </a>
       
-        <a href="https://Miaite.github.io/tag/Ardgjj5BS/" class="badge warning">
+        <a href="https://Miaite.github.io/tag/Ardgjj5BS/" class="badge secondary">
           算法
         </a>
       

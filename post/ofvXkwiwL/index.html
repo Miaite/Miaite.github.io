@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" >
 
-<title>快排的四种写法 | A Blog of Miaite</title>
+<title>More Effective C++ 笔记（05） | A Blog of Miaite</title>
 <meta name="description" content="一些流水账，技术笔记为主">
 
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
@@ -81,80 +81,53 @@
       <div class="sm-12 md-8 col">
         <div class="paper">
           <article class="article">
-            <h1>快排的四种写法</h1>
+            <h1>More Effective C++ 笔记（05）</h1>
             <p class="article-meta">
-              2021-03-17
+              2021-04-28
               
-                <a href="https://Miaite.github.io/tag/Ardgjj5BS/" class="badge ">
-                  算法
+                <a href="https://Miaite.github.io/tag/U4pTdc1co/" class="badge warning">
+                  C++从入门到入坟
                 </a>
               
             </p>
             
-              <img src="https://wiki.jikexueyuan.com/project/easy-learn-algorithm/images/3.1.png" alt="快排的四种写法">
+              <img src="https://img1.doubanio.com/view/subject/s/public/s28272918.jpg" alt="More Effective C++ 笔记（05）">
             
             <div class="post-content">
-              <p>快速排序是常见的排序算法，可分为 partition 和 recursion 两个部分，至于 partition 的具体实现，有一些不同的方式可选。</p>
+              <p>本篇笔记包含 Term 30~35。</p>
 <!-- more -->
-<p>本文使用 Python 且不对数据的合法性进行判断，前提要求是对一个列表类型的数组 <code>nums</code> 进行原地排序。</p>
-<pre><code class="language-Python"># 先来一个最简单的，其实用的是 Timsort
-nums.sort()
-</code></pre>
-<h3 id="方法1填坑">方法1：填坑</h3>
-<p>也就是<a href="https://book.douban.com/subject/2024655/">教材</a>上使用的方法</p>
-<pre><code class="language-Python"># 不同的快排写法，区别都在于 partition
-def partition(nums, l, r):
-    pivot = nums[l]
-    while l &lt; r:
-        while l &lt; r and nums[r] &gt; pivot:
-            r -= 1
-        nums[l] = nums[r]
-        while l &lt; r and nums[l] &lt;= pivot:
-            l += 1
-        nums[r] = nums[l]
-    nums[l] = pivot
-    return l
-
-# 分治，递归
-def q_sort(nums, l, r):
-    if l &gt;= r:
-        return
-    pivot_idx = partition(nums, l, r)
-    q_sort(nums, l, pivot_idx-1)
-    q_sort(nums, pivot_idx+1, r)
-
-
-def quick_sort(nums):
-    q_sort(nums, 0, len(nums)-1)
-</code></pre>
-<h3 id="方法2交换">方法2：交换</h3>
-<p>在方法1的思路上，修改为交换两个位置的元素</p>
-<pre><code class="language-Python">def partition(nums, l, r):
-    pivot = nums[l]
-    start = l
-    while l &lt; r:
-        while l &lt; r and nums[r] &gt; pivot:
-            r -= 1
-        while l &lt; r and nums[l] &lt;= pivot:
-            l += 1
-        if l &lt; r:
-            nums[l], nums[r] = nums[r], nums[l]
-    nums[start], nums[l] = nums[l], nums[start]
-    return l
-</code></pre>
-<h3 id="方法3区间维护">方法3：区间维护</h3>
-<p>《算法导论》上面的写法：通过从左到右一次遍历，两个指针，比较并交换元素来维护区间 <code>[l, i]</code> 和 <code>(i, j)</code> 中的元素小于/大于 pivot</p>
-<pre><code class="language-Python">def partition(nums, l, r):
-    pivot = nums[r]
-    i = l - 1
-    for j in range(l, r):
-        if nums[j] &lt;= pivot:
-            i += 1
-            nums[i], nums[j] = nums[j], nums[i]
-    nums[i+1], nums[r] = nums[r], nums[i+1]
-    return i+1
-</code></pre>
-<p>其实还有一些其它的写法，不过大同小异，掌握核心思路就行。</p>
+<h2 id="term-30proxy-classes替身类-代理类">Term 30：Proxy classes（替身类、代理类）</h2>
+<p>Proxy classes 的作用：</p>
+<ol>
+<li>多维数组，<code>operator []</code> 返回次级数组</li>
+<li>左值/右值的区分</li>
+<li>压抑隐式转换</li>
+</ol>
+<h2 id="term-31让函数根据一个以上的对象类型来决定如何虚化">Term 31：让函数根据一个以上的对象类型来决定如何虚化</h2>
+<p>假设我们的一个函数，接收两个对象参数，需要根据具体两个对象来确定实施什么操作，几种思路：</p>
+<ol>
+<li>虚函数 + RTTI（运行时期类型辨识）：编写多个 if-else 的判断，判断对象类型再操作（可以遇见，这是个糟糕的做法，除非类别有限且固定）</li>
+<li>只使用虚函数：重载不同的传入参数，函数体内调用 <code>this</code>，则只需要维护单个参数的不同类型即可</li>
+<li>仿照虚函数表，创建多个成员函数，效果类似上一条</li>
+<li>使用“非成员（Non-Member）函数”，接收两个参数。初始化一个 map 存储不同类型对的函数指针，再非成员函数体中间接获取并调用这个函数指针</li>
+</ol>
+<h2 id="term-32在未来时态下发展程序">Term 32：在未来时态下发展程序</h2>
+<ol>
+<li>提供完整的 classes ——即使某些部分目前用不到。当新的需求进来，你不太需要回头去修改那些 classes</li>
+<li>设计你的接口，使有利于共同的操作行为，阻止共同的错误</li>
+<li>尽量使你的代码一般化（泛化），除非有不良的巨大后果</li>
+</ol>
+<h2 id="term-33将非尾端类non~leaf-classes设计为抽象类abstract-classes">Term 33：将非尾端类（non～leaf classes）设计为抽象类（abstract classes）</h2>
+<p>这样可以阻止一些不可靠的行为，限制基类指针的行为。</p>
+<h2 id="term-34如何在同一个程序中结合-c-和-c">Term 34：如何在同一个程序中结合 C++ 和 C</h2>
+<ol>
+<li>将双方都使用的函数声明为  <code>extern &quot;C&quot;</code></li>
+<li>如果可能，尽量在 C++中撰写 main</li>
+<li>new/delete 和 malloc/free 分开配对使用</li>
+<li>将两个语言间的“数据结构传递”限制于 C 所能了解的形式；C++structs 如果内含非虚函数，倒是不受此限</li>
+</ol>
+<h2 id="term-35让自己习惯于标准-c-语言">Term 35：让自己习惯于标准 C++ 语言</h2>
+<p>尽量使用 C++ 风格和标准的库函数，语法等等</p>
 
             </div>
           </article>
@@ -165,9 +138,9 @@ def quick_sort(nums):
               <div class="next">
                 下一篇
               </div>
-              <a href="https://Miaite.github.io/post/CvQvuRPWt/">
+              <a href="https://Miaite.github.io/post/IwsB4nl6k/">
                 <h3 class="post-title">
-                  Effective C++ 笔记（08）
+                  More Effective C++ 笔记（04）
                 </h3>
               </a>
             </div>
@@ -286,11 +259,11 @@ def quick_sort(nums):
     </div>
     <div class="row">
       
-        <a href="https://Miaite.github.io/tag/U4pTdc1co/" class="badge ">
+        <a href="https://Miaite.github.io/tag/U4pTdc1co/" class="badge secondary">
           C++从入门到入坟
         </a>
       
-        <a href="https://Miaite.github.io/tag/Ardgjj5BS/" class="badge warning">
+        <a href="https://Miaite.github.io/tag/Ardgjj5BS/" class="badge success">
           算法
         </a>
       

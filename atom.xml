@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://Miaite.github.io</id>
     <title>A Blog of Miaite</title>
-    <updated>2021-04-26T12:52:02.706Z</updated>
+    <updated>2021-04-28T06:56:49.224Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://Miaite.github.io"/>
     <link rel="self" href="https://Miaite.github.io/atom.xml"/>
@@ -10,6 +10,128 @@
     <logo>https://Miaite.github.io/images/avatar.png</logo>
     <icon>https://Miaite.github.io/favicon.ico</icon>
     <rights>All rights reserved 2021, A Blog of Miaite</rights>
+    <entry>
+        <title type="html"><![CDATA[More Effective C++ 笔记（05）]]></title>
+        <id>https://Miaite.github.io/post/ofvXkwiwL/</id>
+        <link href="https://Miaite.github.io/post/ofvXkwiwL/">
+        </link>
+        <updated>2021-04-28T06:37:10.000Z</updated>
+        <summary type="html"><![CDATA[<p>本篇笔记包含 Term 30~35。</p>
+]]></summary>
+        <content type="html"><![CDATA[<p>本篇笔记包含 Term 30~35。</p>
+<!-- more -->
+<h2 id="term-30proxy-classes替身类-代理类">Term 30：Proxy classes（替身类、代理类）</h2>
+<p>Proxy classes 的作用：</p>
+<ol>
+<li>多维数组，<code>operator []</code> 返回次级数组</li>
+<li>左值/右值的区分</li>
+<li>压抑隐式转换</li>
+</ol>
+<h2 id="term-31让函数根据一个以上的对象类型来决定如何虚化">Term 31：让函数根据一个以上的对象类型来决定如何虚化</h2>
+<p>假设我们的一个函数，接收两个对象参数，需要根据具体两个对象来确定实施什么操作，几种思路：</p>
+<ol>
+<li>虚函数 + RTTI（运行时期类型辨识）：编写多个 if-else 的判断，判断对象类型再操作（可以遇见，这是个糟糕的做法，除非类别有限且固定）</li>
+<li>只使用虚函数：重载不同的传入参数，函数体内调用 <code>this</code>，则只需要维护单个参数的不同类型即可</li>
+<li>仿照虚函数表，创建多个成员函数，效果类似上一条</li>
+<li>使用“非成员（Non-Member）函数”，接收两个参数。初始化一个 map 存储不同类型对的函数指针，再非成员函数体中间接获取并调用这个函数指针</li>
+</ol>
+<h2 id="term-32在未来时态下发展程序">Term 32：在未来时态下发展程序</h2>
+<ol>
+<li>提供完整的 classes ——即使某些部分目前用不到。当新的需求进来，你不太需要回头去修改那些 classes</li>
+<li>设计你的接口，使有利于共同的操作行为，阻止共同的错误</li>
+<li>尽量使你的代码一般化（泛化），除非有不良的巨大后果</li>
+</ol>
+<h2 id="term-33将非尾端类non~leaf-classes设计为抽象类abstract-classes">Term 33：将非尾端类（non～leaf classes）设计为抽象类（abstract classes）</h2>
+<p>这样可以阻止一些不可靠的行为，限制基类指针的行为。</p>
+<h2 id="term-34如何在同一个程序中结合-c-和-c">Term 34：如何在同一个程序中结合 C++ 和 C</h2>
+<ol>
+<li>将双方都使用的函数声明为  <code>extern &quot;C&quot;</code></li>
+<li>如果可能，尽量在 C++中撰写 main</li>
+<li>new/delete 和 malloc/free 分开配对使用</li>
+<li>将两个语言间的“数据结构传递”限制于 C 所能了解的形式；C++structs 如果内含非虚函数，倒是不受此限</li>
+</ol>
+<h2 id="term-35让自己习惯于标准-c-语言">Term 35：让自己习惯于标准 C++ 语言</h2>
+<p>尽量使用 C++ 风格和标准的库函数，语法等等</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[More Effective C++ 笔记（04）]]></title>
+        <id>https://Miaite.github.io/post/IwsB4nl6k/</id>
+        <link href="https://Miaite.github.io/post/IwsB4nl6k/">
+        </link>
+        <updated>2021-04-27T11:28:50.000Z</updated>
+        <summary type="html"><![CDATA[<p>本篇笔记包含 Term 25~29。</p>
+]]></summary>
+        <content type="html"><![CDATA[<p>本篇笔记包含 Term 25~29。</p>
+<!-- more -->
+<h2 id="term-25将-constructor-和-non-member-functions-虚化">Term 25：将 constructor 和 non-member functions 虚化</h2>
+<ol>
+<li>事实上构造函数不能是虚函数，但某些情况下，我们可能需要使用虚函数性质的 constructor，这时候，我们可以创建一个虚函数 <code>clone()</code>，在 <code>clone</code> 中调用构造函数。</li>
+<li>类似的，non-member functions 也不能是虚函数，但是我们可以定义一个接口函数，接收基类，再调用类中的虚函数，达成类似的效果。</li>
+</ol>
+<h2 id="term-26限制某个-class所能产生的对象数量">Term 26：限制某个 class所能产生的对象数量</h2>
+<p>最好的做法是设计一个用来计算对象个数的 Base Class，</p>
+<pre><code class="language-C++">template &lt;typename T&gt;
+class Counted {
+ public:
+  class TooManyObjects {};  // 会被抛出的异常
+  static int objectCount() { return numObjects; };
+ protected
+     :  // 构造函数和析构函数定义为 protected，并且 Counted 类应被 private 继承
+  Counted();
+  // 省略其它构造函数，实现中应调用 init()
+  ~Counted() { --numObjects; };
+ private:  // numObjects 和 maxObjects 定义为 stactic，实现对象计数
+  static int numObjects;
+  static const size_t maxObjects;
+  void init();
+};
+template &lt;typename T&gt;
+int Counted&lt;T&gt;::numObjects = 0;
+template &lt;typename T&gt;
+Counted&lt;T&gt;::Counted() {
+  init();
+}
+template &lt;typename T&gt;
+void Counted&lt;T&gt;::init() {
+  if (numObjects &gt;= maxObjects) throw TooManyObjects();
+  ++numObjects;
+}
+
+// 私有继承 Counted
+class Foo : private Counted&lt;Foo&gt; {
+ public:  // 通过 newFoo 间接调用构造函数
+  static Foo* newFoo();
+  using Counted&lt;Foo&gt;::objectCount;
+  ~Foo();
+ private:  // 构造函数私有
+  Foo(){};
+};
+template &lt;&gt;
+const size_t Counted&lt;Foo&gt;::maxObjects = 10;  // 继承 Counted 时指定 maxObjects
+Foo* Foo::newFoo() { return new Foo(); }
+</code></pre>
+<h2 id="term-27要求或禁止对象产生于-heap-之中">Term 27：要求（或禁止）对象产生于 heap 之中</h2>
+<ol>
+<li>要求对象产生于 heap 之中：将构造或者析构函数设置为非 public 即可</li>
+<li>判断对象是否在 heap 中：编写一个基类，重载 <code>operator new</code>，调用 new 的时候把指针存入一个 list（数组，vector 之类的也可以），设置一个接口函数，判断当前对象的指针是否在 list 当中。继承这个类的派生类，通过接口可以判断对象是否在 heap 中</li>
+<li>禁止对象产生于 heap 之中：将 <code>operator new/delete</code> 设置为非 public 即可</li>
+</ol>
+<h2 id="term-28smart-pointers智能指针">Term 28：Smart Pointers（智能指针）</h2>
+<p>智能指针使得一下几件事情更加有控制权：</p>
+<ol>
+<li>构造和析构</li>
+<li>复制和赋值（Copying and Assignment）</li>
+<li>解引（Dereferencing）</li>
+</ol>
+<h2 id="term-29reference-counting引用计数">Term 29：Reference counting（引用计数）</h2>
+<p>适合使用引用计数类的场景：</p>
+<ol>
+<li>相对多数的对象共享相对少量的实值</li>
+<li>对象实值的产生或销毁成本很高，或是它们使用许多内存</li>
+</ol>
+]]></content>
+    </entry>
     <entry>
         <title type="html"><![CDATA[More Effective C++ 笔记（03）]]></title>
         <id>https://Miaite.github.io/post/LQ41yj2Me/</id>
@@ -500,107 +622,6 @@ d.mf2(y);  // 不可行，被遮蔽
 <li>支持“编译依存性最小化”的一般构想是：相依与声明式，不要相依于定义式。基于此构想的两个手段是 Handle classes 和 Interface classes</li>
 <li>程序库头文件应该以“完全且仅有声明式”的形式存在</li>
 </ol>
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[Effective C++ 笔记（04）]]></title>
-        <id>https://Miaite.github.io/post/gbhU7f2k5/</id>
-        <link href="https://Miaite.github.io/post/gbhU7f2k5/">
-        </link>
-        <updated>2020-11-10T06:29:15.000Z</updated>
-        <summary type="html"><![CDATA[<p>本篇笔记包含 Term 18~25。</p>
-]]></summary>
-        <content type="html"><![CDATA[<p>本篇笔记包含 Term 18~25。</p>
-<!-- more -->
-<h2 id="term-18让接口容易被正确使用不易被误用">Term 18：让接口容易被正确使用，不易被误用</h2>
-<p>这一点其实比较难做到，可以参考这几个方面：</p>
-<ol>
-<li>接口的一致性，与内置类型（包括 STL）的行为兼容</li>
-<li>防止误用包括建立新类型、限制类型上的操作、束缚对象的值以及自动管理资源</li>
-<li>shared_ptr 支持定制型 deleter，可以防范 DLL 问题，可用来自动解除互斥锁</li>
-</ol>
-<h2 id="term-19设计-class-犹如设计-type">Term 19：设计 class 犹如设计 type</h2>
-<p>在 C++ 中，设计一个通用的 class 就是设计一个新的类型，需要考虑以下一些方面：</p>
-<ol>
-<li>新 type 的对象应该如何被创建和销毁？</li>
-<li>对象的初始化和对象的赋值该有什么样的差别？调用不同的函数</li>
-<li>新 type 的对象如果被 passed by value，意味着什么？会调用 copy 构造函数</li>
-<li>什么是新 type 的合法值？</li>
-<li>你的新 type 需要配合某个继承图系吗？继承自某个 class 或者允许被继承有不同的设计要点</li>
-<li>你的新 type 需要什么样的转换？考虑是否需要在不同的 class 对象之间转换，设计显式/隐式转换</li>
-<li>什么样的操作符和函数对此新 type 而言是合理的？</li>
-<li>什么样的标准函数应该驳回？禁用编译器自动生成的函数</li>
-<li>谁该取用新 type 的成员？考虑如何设置 public/protect/private 成员以及 friends</li>
-<li>什么是新 type 的 undeclared interface？</li>
-<li>你的新 type 有多么一般化？考虑定义一个新的 class template</li>
-<li>你真的需要一个新 type 吗？也许通过多个函数或者 template 就能达到需要</li>
-</ol>
-<h2 id="term-20宁以-pass-by-reference-const-替换-pass-by-value">Term 20：宁以 pass-by-reference-const 替换 pass-by-value</h2>
-<p>C++ 默认以 value 形式进行传递，这会带来大量的复制消耗，而且可能造成对象切割（slicing）问题。以 reference 传递会高效很多。但也有例外，内置类型、STL 迭代器以及函数对象以 value 传递更加合适。</p>
-<h2 id="term-21必须返回对象时别妄想返回器-reference">Term 21：必须返回对象时，别妄想返回器 reference</h2>
-<p>返回 pointer/reference 指向 local 对象是错误行为，指向 local static 也是愚蠢的行为（但可行），reference 指向 heap-allocated 对象会内存泄漏。</p>
-<h2 id="term-22将成员变量声明为-private">Term 22：将成员变量声明为 private</h2>
-<p>简单来说，就是为了提高 class 的封装性</p>
-<h2 id="term-23宁以-non-menber-non-friend-替换-member-函数">Term 23：宁以 non-menber、non-friend 替换 member 函数</h2>
-<p>这样既可以增加 class 的封装性，也可以让函数更容易扩充。</p>
-<h2 id="term-24若所有参数皆需类型转换请为此采用-non-menber-函数">Term 24：若所有参数皆需类型转换，请为此采用 non-menber 函数</h2>
-<p>采用 non-menber 函数可以进行合适的隐式类型转换。</p>
-<h2 id="term-25考虑写出一个不抛出异常的-swap-函数">Term 25：考虑写出一个不抛出异常的 swap 函数</h2>
-<p>STL 中默认的 swap 函数会调用 copy 构造函数和 copy 赋值运算符，在某些情况下带来不必要的性能损耗。可以考虑的改写思路：</p>
-<ol>
-<li>添加一个用于 swap 的 public member 函数（不能抛出异常）</li>
-<li>在 class 或者 template 的命名空间提供一个 non-member 函数 swap，用这个函数调用 1. 中的 member 函数 swap。这点可适用于 class template</li>
-<li>特化 std::swap 来调用 member 函数 swap</li>
-<li>用户使用 swap 时应当使用 <code>using std::swap;</code></li>
-</ol>
-<pre><code class="language-C++">template&lt;typename T&gt;
-void doSomething(T&amp; obj1, T&amp; obj2){
-    using std::swap;    // 让 std::swap 在此函数内可见
-    swap(obj1, obj2);    // 自动选择最佳的 swap 版本
-}
-</code></pre>
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[Effective C++ 笔记（03）]]></title>
-        <id>https://Miaite.github.io/post/386I6Xacv/</id>
-        <link href="https://Miaite.github.io/post/386I6Xacv/">
-        </link>
-        <updated>2020-11-07T07:42:41.000Z</updated>
-        <summary type="html"><![CDATA[<p>本篇笔记包含 Term 13~17。</p>
-]]></summary>
-        <content type="html"><![CDATA[<p>本篇笔记包含 Term 13~17。</p>
-<!-- more -->
-<h2 id="term-13以对象管理资源">Term 13：以对象管理资源</h2>
-<p>编写 C++ 程序容易遇到的一个问题就是内存泄漏，手动 <code>delete</code> 容易遇到各种问题。一个较好的解决方案是使用类来管理资源，通过析构过程保证资源的正确释放。</p>
-<ol>
-<li>使用 RAII 对象，在其构造函数中获取资源，析构函数中释放资源</li>
-<li>常用的 RAII 对象，智能指针，shared_ptr 和 unique_ptr</li>
-</ol>
-<h2 id="term-14在资源管理类中小心-copying-行为">Term 14：在资源管理类中小心 copying 行为</h2>
-<p>可选的策略有：</p>
-<ol>
-<li>禁止复制</li>
-<li>引用计数</li>
-<li>深拷贝</li>
-<li>转移所有权（auto_ptr 那样的行为）</li>
-</ol>
-<h2 id="term-15在资源管理类中提供对原始资源的访问">Term 15：在资源管理类中提供对原始资源的访问</h2>
-<p>RAII class 应当提供一个直接获取到原始资源（指针/引用）的方法。一般来说，显示转换比较安全，隐式转换比较方便。</p>
-<h2 id="term-16成对使用-new-和-delete-时要采取相同形式">Term 16：成对使用 new 和 delete 时要采取相同形式</h2>
-<p>如果在 <code>new</code> 时使用了 <code>[]</code>，那么在 <code>delete</code> 时也应使用 <code>[]</code>，未使用 <code>[]</code> 时同样要准寻这个原则，以避免释放资源出错。</p>
-<h2 id="term-17以独立语句将-newed-对象置入智能指针">Term 17：以独立语句将 newed 对象置入智能指针</h2>
-<p>要以独立语句将 newed 对象置入智能指针，否则可能发生难以察觉的资源泄漏</p>
-<pre><code class="language-C++">// 首先有以下定义
-int priority();
-void processWidget(std::tr1::shared_ptr&lt;Widget&gt; pw, int priority);
-// 几种调用
-processWidget(new Widget, priority());    // 出错，shared_ptr 无法隐式转换
-processWidget(std::tr1::shared_ptr&lt;Widget&gt; (new Widget), priority());    // 虽然可以通过编译，但是假如 priority() 先于 shared_ptr 的构造函数执行且出现异常，则资源泄漏
-// 下面时正确做法
-std::tr1::shared_ptr&lt;Widget&gt; pw(new Widget);
-processWidget(pw, priority());
-</code></pre>
 ]]></content>
     </entry>
 </feed>
