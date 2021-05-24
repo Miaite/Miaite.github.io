@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://Miaite.github.io</id>
     <title>A Blog of Miaite</title>
-    <updated>2021-04-29T03:50:53.252Z</updated>
+    <updated>2021-05-24T04:47:05.539Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://Miaite.github.io"/>
     <link rel="self" href="https://Miaite.github.io/atom.xml"/>
@@ -10,6 +10,395 @@
     <logo>https://Miaite.github.io/images/avatar.png</logo>
     <icon>https://Miaite.github.io/favicon.ico</icon>
     <rights>All rights reserved 2021, A Blog of Miaite</rights>
+    <entry>
+        <title type="html"><![CDATA[Effective Modern C++ 笔记（06）]]></title>
+        <id>https://Miaite.github.io/post/rwAwSHvq2/</id>
+        <link href="https://Miaite.github.io/post/rwAwSHvq2/">
+        </link>
+        <updated>2021-05-23T04:52:25.000Z</updated>
+        <summary type="html"><![CDATA[<p>本篇笔记包含 Term 35~。</p>
+]]></summary>
+        <content type="html"><![CDATA[<p>本篇笔记包含 Term 35~。</p>
+<!-- more -->
+<h2 id="term-35优先选用基于任务而非基于线程的程序设计">Term 35：优先选用基于任务而非基于线程的程序设计</h2>
+<ol>
+<li><code>std::thread</code> 的 API 并未提供直接获取异步运算函数返回值的途径，而且如果函数出现异常，程序会终止</li>
+<li>基于线程的程序设计要求手动管理处理线程资源耗尽、超订、负载均衡、跨平台等问题</li>
+<li>使用 async 可以很大程度避免 2. 中的问题</li>
+</ol>
+<h2 id="term-36如果异步是必要的则指定-stdlaunchasync">Term 36：如果异步是必要的则指定 std::launch::async</h2>
+<ol>
+<li><code>std::async</code> 的默认启动策略不保证任务以异步方式执行</li>
+<li>
+<ol>
+<li>中的方式可能导致线程局部变量不确定，任务永远无法完成（deferred 方式执行）等问题</li>
+</ol>
+</li>
+<li>指定 <code>std::async</code> 的启动策略可以避免上述问题。<code>auto fut = std::async(std::launch::async | std::launch::deferred, f);</code></li>
+</ol>
+<h2 id="term-37使-stdtread-型别对象在所有路径都-unjionable">Term 37：使 std::tread 型别对象在所有路径都 unjionable</h2>
+<p>unjionable 状态表示该 <code>std::tread</code> 处于安全结束的状态，在编写多线程程序时应当达到这个要求。然而考虑所有路径的情况是复杂的，包括 return、break、goto、异常跳出等多种情况，合适的方法是使用 RAII 对象来管理。</p>
+<pre><code class="language-c++">class ThreadRAII {
+ public:
+  enum class DtorAction { join, detach };
+  ThreadRAII(std::thread&amp;&amp; t, DtorAction a): action(a), t(std::move(t)) {}
+  ~ThreadRAII() {
+    if (t.joinable()) {
+      if (action == DtorAction::join) {
+        t.join();
+      } else {
+        t.detach();
+      }
+    }
+  }
+  ThreadRAII(ThreadRAII&amp;&amp;) = default;
+  ThreadRAII&amp; operator=(ThreadRAII&amp;&amp;) = default;
+  std::thread&amp; get() { return t; };
+ private:
+  DtorAction action;
+  std::thread t;
+};
+</code></pre>
+<h2 id="term-38对变化多端的线程-handle-析构函数行为保持关注">Term 38：对变化多端的线程 handle 析构函数行为保持关注</h2>
+<ol>
+<li>future 的正常析构⾏为就是销毁 future 本⾝的成员数据</li>
+<li>最后⼀个引⽤ <code>std::async</code> 创建的共享状态的 future 的析构函数会在任务结束前保持阻塞</li>
+</ol>
+<h2 id="term-39考虑针对一次性事件通信使用以-void-为模板型别实参的-future">Term 39：考虑针对一次性事件通信使用以 void 为模板型别实参的 future</h2>
+<pre><code class="language-c++">std::promise&lt;void&gt; p;
+void detect() {
+  auto sf = g.get_future().share();  // sf 的型别是 std::shared_future&lt;void&gt;
+  std::vector&lt;std::thread&gt; vt;
+  for (int i = 0; i &lt; threadsToRun; ++i) {
+    vt.emplace_back([sf] {
+      sf.wait();
+      react();
+    });
+  }
+  ...  // 若此段省略内容抛出异常，detect 函数会失去响应
+  p.set_value();  // 让所有线程取消暂停
+  ...
+  for (auto&amp; t : vt) {  // make all threads unjoinable
+    t.join();
+  }
+}
+</code></pre>
+<h2 id="term-40对并发使用-stdatomic对特种内存使用-volatile">Term 40：对并发使用 std::atomic，对特种内存使用 volatile</h2>
+<ol>
+<li><code>std::atomic</code> 用于多线程访问的数据，且不用于互斥量</li>
+<li><code>volatile</code> 用于读写操作不可以被优化掉的内存，它会让编译器执行每一次内存操纵，而不能优化省略掉中间步骤（例如几条临近的语句都对同一个变量进行赋值的情形）</li>
+</ol>
+<h2 id="term-41针对可复制的形参在移动成本低且一定会被复制的前提下考虑将其按值传递">Term 41：针对可复制的形参，在移动成本低且一定会被复制的前提下，考虑将其按值传递</h2>
+<ol>
+<li>对于可复制的，移动成本低的，而且一定会被复制的形参而言，按值传递和按引用传递效率接近，而且按值传递目标代码更少</li>
+<li>copy 构造函数拷贝形参可能比赋值运算符拷贝形参的成本高出不少</li>
+<li>按值传递肯定会导致 slicing 问题，所以基类类型不适合按值传递</li>
+</ol>
+<h2 id="term-42考虑置入而非插入">Term 42：考虑置入而非插入</h2>
+<p>以 <code>std::vector</code> 为例，置入是 emplace_back，插入是 push_back</p>
+<ol>
+<li>置入函数有时比插入更高效，且不会有比插入低效的可能</li>
+<li>置入函数更高效情形的条件：1）待添加物的值是以构造而非赋值方式加入容器；2）传递的实参型别与容器内容物的型别不同；3）容器不会由于存在重复值而拒绝添加</li>
+<li>置入函数可能会执行在插入函数中会被拒绝的型别转换</li>
+</ol>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[Effective Modern C++ 笔记（05）]]></title>
+        <id>https://Miaite.github.io/post/wt6eTxymO/</id>
+        <link href="https://Miaite.github.io/post/wt6eTxymO/">
+        </link>
+        <updated>2021-05-22T05:41:50.000Z</updated>
+        <summary type="html"><![CDATA[<p>本篇笔记包含 Term 31~34。</p>
+]]></summary>
+        <content type="html"><![CDATA[<p>本篇笔记包含 Term 31~34。</p>
+<!-- more -->
+<h2 id="term-31避免默认捕获模式">Term 31：避免默认捕获模式</h2>
+<p>默认捕获模式可能造成一些语义模糊，让我们误以为变量都是按值捕获，可以安全使用，实际上只有非静态局部变量才会按值捕获。当可能造成指针空悬时，我们应当明确把该变量复制到闭包。</p>
+<h2 id="term-32使用初始化捕获将对象移入闭包">Term 32：使用初始化捕获将对象移入闭包</h2>
+<p>C++14 中添加了广义捕获的特性，可以实现移动语义的捕获甚至是直接初始化一个对象放入闭包。在  C++11 则需要使用 <code>std::bind</code> 来模拟达成类似的效果。</p>
+<pre><code class="language-c++">auto func = [_pw = std::move(pw)] {}  // pw 是一个 unique_ptr，_pw是闭包捕获的形参名
+auto func = [pw = std::make_unique&lt;Foo&gt;()] {} // 这种广义”捕获“也是支持的
+</code></pre>
+<h2 id="term-33对-auto-型别的形参使用-decltype以-stdforward-之">Term 33：对 auto&amp;&amp; 型别的形参使用 decltype，以 std::forward 之</h2>
+<pre><code class="language-c++">auto f = [](auto&amp;&amp;... params) {
+  return func(std::forward&lt;decltype(params)&gt;(params)...); 
+};
+</code></pre>
+<h2 id="term-34优先选用-lambda-式而非-stdbind">Term 34：优先选用 lambda 式，而非 std::bind</h2>
+<p>对于 modern C++ 而言，使用 lambda 式在任何时候都是更优选，<code>std::bind</code> 唯一的作用式在 C++11（非 C++14） 中实现移动捕获和绑定模板化的函数调用运算符。</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[Effective Modern C++ 笔记（04）]]></title>
+        <id>https://Miaite.github.io/post/JJa-UVHyT/</id>
+        <link href="https://Miaite.github.io/post/JJa-UVHyT/">
+        </link>
+        <updated>2021-05-21T10:52:53.000Z</updated>
+        <summary type="html"><![CDATA[<p>本篇笔记包含 Term 23~30。</p>
+]]></summary>
+        <content type="html"><![CDATA[<p>本篇笔记包含 Term 23~30。</p>
+<!-- more -->
+<h2 id="term-23理解-stdmove-和-stdforward">Term 23：理解 std::move 和 std::forward</h2>
+<ol>
+<li><code>std::move</code> 实施的是强制转换到右值型别</li>
+<li>仅当传入的实参被绑定到右值时，<code>std::forward</code> 实施强制转换到右值型别</li>
+<li><code>std::move</code> 和 <code>std::forward</code> 在运行期不做任何操作</li>
+</ol>
+<h2 id="term-24区分万能引用和右值引用">Term 24：区分万能引用和右值引用</h2>
+<ol>
+<li>如果函数模板形参是 <code>T&amp;&amp;</code> 形式（包括 <code>auto&amp;&amp;</code>），并且 T 依赖于型别推导，则为万能引用</li>
+<li>如果 <code>T&amp;&amp;</code> 形式不依赖型别推导，则为右值引用</li>
+<li>如果使用右值初始化万能引用，得到一个右值引用；使用左值初始化万能引用，则得到一个左值引用</li>
+</ol>
+<h2 id="term-25针对右值引用实施-stdmove针对万能引用实施-stdforward">Term 25：针对右值引用实施 std::move，针对万能引用实施 std::forward</h2>
+<ol>
+<li>针对右值引用的最后一次实施 <code>std::move</code>，针对万能引用的最后一次实施 <code>std::forward</code></li>
+<li>作为按值返回的函数的右值引用和万能引用，依照 1. 中规则</li>
+<li>如果按值返回局部对象，可能适用于返回值优化，不要使用 <code>std::move</code> 或者 <code>std::forward</code></li>
+</ol>
+<h2 id="term-26避免依万能引用型别进行重载">Term 26：避免依万能引用型别进行重载</h2>
+<p>万能引用型别的重载函数会精确匹配一些程序员并无意图匹配的类型，应当谨慎使用，完美转发构造函数的问题更多。</p>
+<h2 id="term-27熟悉依万能引用型别进行重载的替代方案">Term 27：熟悉依万能引用型别进行重载的替代方案</h2>
+<p>使用 <code>std::enable_if</code> 对模板施加限制，就可以将万能引用和重载一起使用，不过这种技术控制了编译器可以调用到接受万能引用的重载版本的条件。万能引用在性能方面有优势，但是良好的代码编写令人头疼，一个例子：</p>
+<pre><code class="language-c++">class Person {
+ public:
+  template &lt;typename T,
+            typename = std::enable_if_t&lt;    // 条件判断
+                !std::is_base_of&lt;Person, std::decay_t&lt;T&gt;&gt;::value &amp;&amp;  // 移除修饰词和引用特性，判断是否为 Person 的派生类
+                !std::is_integral&lt;std::remove_reference_t&lt;T&gt;&gt;::value&gt;&gt;  // 移除类型的引用，判断是否为整型
+  explicit Person(T&amp;&amp; n) : name(std::forward&lt;T&gt;(n)) {} // 接受 std::string 型别以及可以强制转换到 std::string 型别的实参的构造函数
+  explicit Person(int idx) : name(nameFromIdx(idx)) {} // 接受整形实参的构造函数
+  // copy 和 move 构造函数等
+ private:
+  std::string name;
+};
+</code></pre>
+<h2 id="term-28理解引用折叠">Term 28：理解引用折叠</h2>
+<p>引用折叠的规则：形参和实参都是引用类型时，只有两者都为右值引用，最终的参数类型才是右值引用，否者为左值引用。引用折叠可能出现在四种情况下：模板实例化、<code>auto</code> 型别生成、使用 <code>typedef</code> 和别名声明出现双重引用、<code>decaltype</code>。</p>
+<h2 id="term-29假定移动操作不存在-成本高-未使用">Term 29：假定移动操作不存在、成本高、未使用</h2>
+<p>在未知是否支持移动语义的情况下（比如编写模板），使用复制操作</p>
+<h2 id="term-30熟悉完美转发的失败情形">Term 30：熟悉完美转发的失败情形</h2>
+<p>完美转发失败是由于模板类型不能成功推导，或者结果错误，涉及的情形有：大括号初始物、以 0 或 NULL 表达的空指针、仅有声明的整形 <code>static const</code>  成员变量、模板或者重载的函数名字、位域</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[Effective Modern C++ 笔记（03）]]></title>
+        <id>https://Miaite.github.io/post/b8qoOdiHK/</id>
+        <link href="https://Miaite.github.io/post/b8qoOdiHK/">
+        </link>
+        <updated>2021-05-20T14:14:12.000Z</updated>
+        <summary type="html"><![CDATA[<p>本篇笔记包含 Term 18~22。</p>
+]]></summary>
+        <content type="html"><![CDATA[<p>本篇笔记包含 Term 18~22。</p>
+<!-- more -->
+<h2 id="term-18使用-stdunique_ptr-管理具备专属所有权的资源">Term 18：使用 std::unique_ptr 管理具备专属所有权的资源</h2>
+<ol>
+<li><code>std::unique_ptr</code> 是只移类型的智能指针，对托管资源有专属所有权</li>
+<li>默认采用 delete 析构资源，也可以使用自定义函数作为删除器（通常是 lambda 函数），使用带状态的 lambda 函数或者函数指针作为删除器会增加智能指针对象大小</li>
+<li><code>std::unique_ptr</code> 容易转换为 <code>std::shared_ptr</code></li>
+</ol>
+<h2 id="term-19使用-stdshared_ptr-管理具备共享所有权的资源">Term 19：使用 std::shared_ptr 管理具备共享所有权的资源</h2>
+<ol>
+<li><code>std::shared_ptr</code> 可复制可移动，计数管理</li>
+<li><code>std::shared_ptr</code> 大小是裸指针的两倍，使用动态分配的控制块来管理，计数操作必须是原子性的</li>
+<li>默认采用 delete 析构资源，也可以使用自定义函数作为删除器，删除器型别与 <code>std::shared_ptr</code> 型别无关</li>
+<li>避免使用裸指针创建 <code>std::shared_ptr</code>，会创建多余的控制块，析构时出错</li>
+</ol>
+<h2 id="term-20对于类似-stdshared_ptr-但有可能空悬的指针使用-stdweak_ptr">Term 20：对于类似 std::shared_ptr 但有可能空悬的指针使用 std::weak_ptr</h2>
+<ol>
+<li>使用 <code>std::weak_ptr</code> 代替可能空悬的 <code>std::shared_ptr</code>，<code>std::weak_ptr::lock</code> 返回一个 <code>std::shared_ptr</code>，若空悬其为空</li>
+<li>可能会使用 <code>std::weak_ptr</code> 的场景：缓存，观察者列表，避免 <code>std::shared_ptr</code> 指针环路</li>
+</ol>
+<h2 id="term-21优先选用-stdmake_unique-和-stdmake_shared而非直接使用-new">Term 21：优先选用 std::make_unique 和 std::make_shared，而非直接使用 new</h2>
+<ol>
+<li>相比于直接使用 new，make 系列函数代码简短，且异常安全，并且 <code>std::make_shared</code> 和 <code>std::allocated_shared</code> 生成的目标码更优</li>
+<li>不适于使用 make 系列函数的场景包括需要定制删除器，以及期望直接传递大括号初始化物</li>
+<li>对于 <code>std::shared_ptr</code>，不建议使用 make 系列函数的额外场景有：自定义内存管理的类；内存紧张的系统，非常大的对象，以及存在比 <code>std::shared_ptr</code> 生存期更久的 <code>std::weak_ptr</code></li>
+</ol>
+<h2 id="term-22pimpl-习惯用法时将特殊成员函数的定义放到实现文件中">Term 22：Pimpl 习惯用法时，将特殊成员函数的定义放到实现文件中</h2>
+<p>对于采用 <code>std::unique_ptr</code> 来实现的 pImpl 指针，需要在头文件中声明特种成员函数，但是在实现文件中实现他们（使用 <code>=default</code> 也可以）</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[Effective Modern C++ 笔记（02）]]></title>
+        <id>https://Miaite.github.io/post/y4q9kT2zz/</id>
+        <link href="https://Miaite.github.io/post/y4q9kT2zz/">
+        </link>
+        <updated>2021-05-19T07:10:53.000Z</updated>
+        <summary type="html"><![CDATA[<p>本篇笔记包含 Term 07~17。</p>
+]]></summary>
+        <content type="html"><![CDATA[<p>本篇笔记包含 Term 07~17。</p>
+<!-- more -->
+<h2 id="term-07在创建对象时注意区分-和">Term 07：在创建对象时注意区分 () 和 {}</h2>
+<p>在 Term 2 中，我们了解到 <code>{val...}</code> 实际是 <code>std::initializer_list&lt;T&gt;</code> 类型，使用 <code>{}</code> 初始化需要注意：</p>
+<ol>
+<li>阻止隐式窄化型别转换</li>
+<li><code>Foo f{};</code> 会调用 class Foo 的无参构造函数</li>
+<li>如果一个类实现了 <code>std::initializer_list&lt;T&gt;</code> 为参数的构造函数，则除了 2. 之外，所有使用 <code>{}</code> 的情况都会最优先调用这个构造函数，因此除了明确调用 <code>std::initializer_list&lt;T&gt;</code> 为参数的构造函数的时候，其它情况都应该使用 <code>()</code></li>
+<li><code>Foo f({});</code> 或者 <code>Foo f{{}};</code> 会调用 <code>std::initializer_list&lt;T&gt;</code> 为参数的构造函数，实参为空的 <code>std::initializer_list&lt;T&gt;</code></li>
+<li>非静态成员变量不能使用 <code>()</code>，不可复制对象不能使用 <code>=</code> 操作符</li>
+</ol>
+<h2 id="term-08优先选用-nullptr而非-0-或者-null">Term 08：优先选用 nullptr，而非 0 或者 NULL</h2>
+<p>使用 <code>nullptr</code> 表示空指针（任意类型指针），可以避免 0 或 NULL 错误调用 int 类型的重载</p>
+<h2 id="term-09优先选用别名声明而非-typedef">Term 09：优先选用别名声明，而非 typedef</h2>
+<p>使用别名声明，在函数指针上有优势，并且别名声明支持模板化，而 <code>typedef</code> 不支持。可以通过构造一个模板结构体/类，内嵌 <code>typedef</code> 声明变量来达到类似效果，但是比较繁琐。</p>
+<pre><code class="language-c++">// using 写法
+template&lt;typename T&gt;
+using MyAllocList = std::list&lt;T, MyAlloc&lt;T&gt;&gt;;
+MyAllocList&lt;Widget&gt; lw;
+// typedef 写法
+template&lt;typename T&gt;
+struct MyAllocList {
+    typedef std::list&lt;T, MyAlloc&lt;T&gt;&gt; type;
+}
+MyAllocList&lt;Widget&gt;::type lw;
+</code></pre>
+<h2 id="term-10优先选用限定作用域的枚举型别而非不限作用域的枚举型别">Term 10：优先选用限定作用域的枚举型别，而非不限作用域的枚举型别</h2>
+<p>不限作用域的枚举型别，变量作用域是在外层，造成污染，使用限定作用域的枚举型别（<code>enum class</code>）可以避免这一情况。限定作用域的枚举型别需要强制类型转换，默认的底层类型是 int，可在声明式指定类型。</p>
+<h2 id="term-11优先选用删除函数而非-private-未定义函数">Term 11：优先选用删除函数，而非 private 未定义函数</h2>
+<p>当我们需要禁止编译器编写某个默认的类成员函数时（例如 copy 构造函数），我们可以使用 <code>Foo(const Foo&amp;) = delete</code> 告知编译器禁止生成该成员函数。除了成员函数之外，我们还可以声明其它函数为删除函数，用以避免隐式转换或者时处理特殊边界情况。</p>
+<h2 id="term-12为意在改写的函数添加-override-声明">Term 12：为意在改写的函数添加 override 声明</h2>
+<p>注意 overload 和 override 的区别 ，当我们意图 override 一个虚函数时，应该使用 <code>override</code> 让编译器检查这是否是合法的 override 行为。</p>
+<h2 id="term-13优先选用-const_iterator而非-iterator">Term 13：优先选用 const_iterator，而非 iterator</h2>
+<ol>
+<li>优先选用 const_iterator，而非 iterator</li>
+<li>优先选用非成员函数版本的 begin/cbegin 等，而非成员函数版本</li>
+</ol>
+<h2 id="term-14只要函数不会发射异常就为其加上-noexcept-声明">Term 14：只要函数不会发射异常，就为其加上 noexcept 声明</h2>
+<p>添加 noexcept 声明使得编译器能更好地优化。</p>
+<h2 id="term-15只要有可能使用-constexpr就使用它">Term 15：只要有可能使用 constexpr，就使用它</h2>
+<ol>
+<li><code>constexpr</code> 对象具备 const 属性，并切在编译期就已经知道其值</li>
+<li>如果 <code>constexpr</code> 函数传入地实参是编译期已知的值，那么其结果会在编译期计算得出，否则退化为普通函数</li>
+</ol>
+<h2 id="term-16保证-const-成员函数的线程安全">Term 16：保证 const 成员函数的线程安全</h2>
+<p>通常来说，只读属性是线程安全的。const 成员函数可以保证对象本身不变（除了 mutable 属性），但是 mutable 属性可能造成在读取成员属性时线程不安全（比如实现了缓存）。我们需要编写线程安全的代码避免这种情况。</p>
+<h2 id="term-17理解特种成员函数的生成机制">Term 17：理解特种成员函数的生成机制</h2>
+<ol>
+<li>当我们没有为类编写特种成员函数，而代码中使用到了，编译器会自动替我们生成。他们包括：默认构造函数、析构函数、复制构造函数、复制赋值运算符、移动构造函数和移动赋值运算符</li>
+<li>移动操作仅当类中没有显式声明复制操作、析构函数、移动操作时才会自动生成</li>
+<li>复制构造函数、复制赋值运算符和析构函数，三者应该同时自定义或者同时都不自定义</li>
+<li>使用 <code>=delete</code> 和 <code>=default</code> 声明特种成员函数是使代码更加明确的做法</li>
+<li>成员函数模板不会抑制特种成员函数的生成</li>
+</ol>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[Effective Modern C++ 笔记（01）]]></title>
+        <id>https://Miaite.github.io/post/zawrgbFMU/</id>
+        <link href="https://Miaite.github.io/post/zawrgbFMU/">
+        </link>
+        <updated>2021-05-18T07:29:52.000Z</updated>
+        <summary type="html"><![CDATA[<p>本篇笔记包含 Term 01~06。</p>
+]]></summary>
+        <content type="html"><![CDATA[<p>本篇笔记包含 Term 01~06。</p>
+<!-- more -->
+<h2 id="term-01理解模板型别推导">Term 01：理解模板型别推导</h2>
+<p>C++ 中的类型推导机制应用于模板、<code>auto</code> 和 <code>decaltype</code></p>
+<pre><code class="language-c++">template&lt;typename T&gt;
+void f(ParamType param);    // ParamType 可以是  T/T*/T&amp; 等
+f(expr) // call the function
+</code></pre>
+<ol>
+<li>ParamType 是引用或者指针，但不是万能引用</li>
+</ol>
+<pre><code class="language-c++">template&lt;typename T&gt;
+void f(T&amp; param);
+int x = 1;
+const int cx = x;
+f(x);   // T: int, param: int&amp;
+f(cx);   // T: const int, param: const int&amp;
+</code></pre>
+<ol start="2">
+<li>ParamType 是万能引用，要区分实参是左值还是右值</li>
+</ol>
+<pre><code class="language-c++">template&lt;typename T&gt;
+void f(T&amp;&amp; param);
+int x = 1;
+const int cx = x;
+f(x);   // T: int, param: int&amp;
+f(cx);   // T: const int, param: const int&amp;
+f(27);  // T: int, param: int&amp;&amp;
+</code></pre>
+<ol start="3">
+<li>ParamType 是传值方式</li>
+</ol>
+<pre><code class="language-c++">template&lt;typename T&gt;
+void f(T param);
+int x = 1;
+const int cx = x;
+f(x);   // T: int, param: int
+f(cx);   // T: const int, param: int
+</code></pre>
+<ol start="4">
+<li>数组实参和函数实参可以从引用退化为指针</li>
+</ol>
+<pre><code class="language-c++">template&lt;typename T&gt;
+void f1(T param);
+template&lt;typename T&gt;
+void f2(T&amp; param);
+// void myFunc(int param[]); 完全等价于 void myFunc(int *param);
+const char name[] = &quot;J. P. Briggs&quot;; // name 的类型是 const char[13]
+const char * ptrToName = name; // ptrToName 的类型是 const char *
+f1(name); // T: const char *
+f2(name); // T: const char(&amp;)[13]
+</code></pre>
+<h2 id="term-02理解-auto-型别推导">Term 02：理解 auto 型别推导</h2>
+<p>auto 型别推导和 Term 1 中的模板基本一致，只需要注意两个特殊情况：</p>
+<ol>
+<li>统⼀初始化</li>
+</ol>
+<pre><code class="language-c++">auto x1={27};  // 类型是 std::initializer_list&lt;int&gt;,值是{27}
+auto x2{27}; // 类型是 std::initializer_list&lt;int&gt;,值是{27}
+</code></pre>
+<ol start="2">
+<li>auto 用于函数返回值或者 lambda 形参时，实际还是调用的模板推导机制</li>
+</ol>
+<h2 id="term-03理解-decaltype">Term 03：理解 decaltype</h2>
+<p>通常情况 decaltype 是符合直觉的，注意两个特殊情形：</p>
+<ol>
+<li>用于函数返回值</li>
+</ol>
+<pre><code class="language-c++">template&lt;typename Container, typename Index&gt; // 传入容器（支持 [] 运算符）和下标，返回元素引用类型
+decltype(auto) authAndAccess(Container&amp;&amp; c, Index i){
+    authenticateUser();
+    return std::forward&lt;Container&gt;(c)[i];   // 用到了 std::forward 实现完美转发参数
+}
+</code></pre>
+<ol start="2">
+<li>左值表达式</li>
+</ol>
+<pre><code class="language-c++">int x = 0;
+decltype((x));  // 推导为 int&amp;
+</code></pre>
+<h2 id="term-04掌握查看型别推导结果的方法">Term 04：掌握查看型别推导结果的方法</h2>
+<ol>
+<li>IDE</li>
+<li>编译器错误信息</li>
+</ol>
+<pre><code class="language-c++">template &lt;typename T&gt; // 只对TD进⾏声明
+class TD;
+TD&lt;decltype(x)&gt; xType; // 引出错误消息，类似于，error: aggregate 'TD&lt;int&gt; xType' has incomplete type and cannot be defined
+</code></pre>
+<ol start="3">
+<li>使用 <code>std::type_info::name</code> 或者 Boost.TypeIndex</li>
+<li>以上方法都不完全可靠</li>
+</ol>
+<h2 id="term-05优先选用-auto而非显式型别声明">Term 05：优先选用 auto，而非显式型别声明</h2>
+<p>尽量使用 <code>auto</code> 的优点：</p>
+<ol>
+<li>保证初始化</li>
+<li>用来表示只有编译器才掌握的型别</li>
+<li>避免初始化赋值时隐式类型转换</li>
+</ol>
+<h2 id="term-06当-auto-推导的型别不符合开发者本意时使用显式类型转换">Term 06：当 auto 推导的型别不符合开发者本意时，使用显式类型转换</h2>
+<p>假设我们在使用一个代理类设计的类，或者需要显式转换类型，使用如下代码写法是更清晰明了的：</p>
+<pre><code class="language-c++">auto index = static_cast&lt;int&gt;(d*c.size());  // c.size() 返回 float 类型的值
+auto priority = static_cast&lt;bool&gt;(features[3]); // features 是std::vector&lt;bool&gt; 类型，features[3] 返回 std::vector&lt;bool&gt;::reference 类型
+</code></pre>
+]]></content>
+    </entry>
     <entry>
         <title type="html"><![CDATA[More Effective C++ 笔记（05）]]></title>
         <id>https://Miaite.github.io/post/ofvXkwiwL/</id>
@@ -71,7 +460,7 @@
 </ol>
 <h2 id="term-26限制某个-class所能产生的对象数量">Term 26：限制某个 class所能产生的对象数量</h2>
 <p>最好的做法是设计一个用来计算对象个数的 Base Class，</p>
-<pre><code class="language-C++">template &lt;typename T&gt;
+<pre><code class="language-c++">template &lt;typename T&gt;
 class Counted {
  public:
   class TooManyObjects {};  // 会被抛出的异常
@@ -205,423 +594,6 @@ Foo* Foo::newFoo() { return new Foo(); }
 <p>exception specifications 对于“函数希望抛出什么样的 exceptions”提供了卓越的说明。而在“违反 exception specification的下场十分悲惨，以至于需要立刻结束程序”的形势下，它们提供了默认行为。但是虽然有这些好处，它们相对也有一些缺点，包括编译器只对它们做局部性检验、很容易被不经意地违反等。此外它们可能会妨碍更上层的 exception 处理函数处理未预期的 exceptions——即使更上层的处理函数已经知道该怎么做。</p>
 <h2 id="term-15了解异常处理exception-handling的成本">Term 15：了解异常处理（exception handling）的成本</h2>
 <p>异常处理需要额外的成本，需要谨慎决定使用异常处理机制。</p>
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[More Effective C++ 笔记（01）]]></title>
-        <id>https://Miaite.github.io/post/sGv0WnrMz/</id>
-        <link href="https://Miaite.github.io/post/sGv0WnrMz/">
-        </link>
-        <updated>2021-04-21T10:27:52.000Z</updated>
-        <summary type="html"><![CDATA[<p>本篇笔记包含 Term 1~8。</p>
-]]></summary>
-        <content type="html"><![CDATA[<p>本篇笔记包含 Term 1~8。</p>
-<!-- more -->
-<h2 id="term-1仔细区别-pointers和-references">Term 1：仔细区别 pointers和 references</h2>
-<p>引用也是由指针实现的，引用的特别之处在于：</p>
-<ol>
-<li>必须初始化，不会为空</li>
-<li>引用类似于 <code>Type* cosnt ptr</code>，永远指向初始化时的对象</li>
-<li>引用是一种别名，不需要用 <code>*</code> dereference</li>
-<li>重载操作符时使用指针可能会造成语义混淆，应当使用引用</li>
-</ol>
-<h2 id="term-2最好使用-c-转型操作符">Term 2：最好使用 C++ 转型操作符</h2>
-<ol>
-<li><code>static_cast</code> 普通转换</li>
-<li><code>const_cast</code> 去掉 const 属性，但仍然不能改变常量值，只是为了满足参数调用的类型</li>
-<li><code>dynamic_cast</code> 把指向基类的指针/引用转换成指向其派生类或其兄弟类的指针/引用，失败则返回空指针或者抛出异常</li>
-<li><code>reinterpret_cast</code> 转换函数指针（不推荐使用，没有跨平台标准保证）</li>
-</ol>
-<h2 id="term-3绝对不要以多态polymorphically方式处理数组">Term 3：绝对不要以多态（polymorphically）方式处理数组</h2>
-<p>假设有这样一个函数，参数为基类对象的数组，如果使用派生类对象数组作为参数，调用这个函数，将会出现无法预期的错误，因为 <code>sizeof(基类对象) != sizeof(派生类对象)</code></p>
-<h2 id="term-4非必要不提供-default-constructor">Term 4：非必要不提供 default constructor</h2>
-<p>如果一个类不提供无参的构造函数，可能造成需要需要调用无参构造函数情况下的错乱（比如声明对象数组或者模板类内部的 new）。但是在良好设计的情况下，不提供无参的构造函数，可以保证每一个对象都得到了有效初始化，不需要在使用对象时进行检查。</p>
-<h2 id="term-5对定制的类型转换函数保持警觉">Term 5：对定制的“类型转换函数”保持警觉</h2>
-<p>应当避免编译器的隐式类型转换：</p>
-<ol>
-<li>对提供单参数（可能包含默认参数）的构造函数使用 <code>explicit</code> 关键字</li>
-<li>不提供隐式类型转换操作符方法（形如 <code>operator double() const{}</code>），提供单独的方法。</li>
-</ol>
-<h2 id="term-6区别-incrementdecrement-操作符的前置prefix和后置postfix形式">Term 6：区别 increment/decrement 操作符的前置（prefix）和后置（postfix）形式</h2>
-<p>也就是 C++ 中令人深恶痛绝的 <code>i++</code> 和 <code>++i</code>，在重载操作符时只维护前缀形式即可，后缀形式自动与前缀形式的行为一致。前缀形式返回该类型引用，后缀形式返回 const 该类型。</p>
-<h2 id="term-7千万不要重载-和-操作符">Term 7：千万不要重载 <code>&amp;&amp;</code>，<code>||</code> 和 <code>,</code> 操作符</h2>
-<p>除了 Term 中提到的操作符外，还有很多操作符不应该被重载，否者会造成语义混淆。在重载操作符时应该考虑清楚，这是为了方便编写程序，并且修改的部分是可控的（比如 <code>new</code>、<code>&lt;=</code>、<code>++</code>）</p>
-<h2 id="term-8理解各种不同含义的-new-和-delete">Term 8：理解各种不同含义的 new 和 delete</h2>
-<p>在使用 new operator 的时候，实际上是执行了三个步骤:</p>
-<ol>
-<li>调用类中的 operator new 分配内存</li>
-<li>调用构造函数生成对象</li>
-<li>返回指针</li>
-</ol>
-<p>如果你希望将对象产生于 heap，请使用 newoperator。它不但分配内存而且为该对象调用一个constructor。如果你只是打算分配内存，请调用operator new，那就没有任何 constructor 会被调用。如果你打算在 heap objects 产生时自己决定内存分配方式，请写一个自己的 operator new，并使用 new operator，它将会自动调用你所写的 operator new。如果你打算在已分配（并拥有指针）的内存中构造对象，请使用 placement new。placement new 的使用形式：<code>MyClass * pClass = new(buf) MyClass;</code>。</p>
-<p>如果交给 placement new 的原始内存（raw memory）本身是动态分配而得（通过某种非传统做法），那么你最终还是得释放那块内存，以免内存泄漏。</p>
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[快排的四种写法]]></title>
-        <id>https://Miaite.github.io/post/M4PxdwkA_/</id>
-        <link href="https://Miaite.github.io/post/M4PxdwkA_/">
-        </link>
-        <updated>2021-03-17T02:07:07.000Z</updated>
-        <summary type="html"><![CDATA[<p>快速排序是常见的排序算法，可分为 partition 和 recursion 两个部分，至于 partition 的具体实现，有一些不同的方式可选。</p>
-]]></summary>
-        <content type="html"><![CDATA[<p>快速排序是常见的排序算法，可分为 partition 和 recursion 两个部分，至于 partition 的具体实现，有一些不同的方式可选。</p>
-<!-- more -->
-<p>本文使用 Python 且不对数据的合法性进行判断，前提要求是对一个列表类型的数组 <code>nums</code> 进行原地排序。</p>
-<pre><code class="language-Python"># 先来一个最简单的，其实用的是 Timsort
-nums.sort()
-</code></pre>
-<h3 id="方法1填坑">方法1：填坑</h3>
-<p>也就是<a href="https://book.douban.com/subject/2024655/">教材</a>上使用的方法</p>
-<pre><code class="language-Python"># 不同的快排写法，区别都在于 partition
-def partition(nums, l, r):
-    pivot = nums[l]
-    while l &lt; r:
-        while l &lt; r and nums[r] &gt; pivot:
-            r -= 1
-        nums[l] = nums[r]
-        while l &lt; r and nums[l] &lt;= pivot:
-            l += 1
-        nums[r] = nums[l]
-    nums[l] = pivot
-    return l
-
-# 分治，递归
-def q_sort(nums, l, r):
-    if l &gt;= r:
-        return
-    pivot_idx = partition(nums, l, r)
-    q_sort(nums, l, pivot_idx-1)
-    q_sort(nums, pivot_idx+1, r)
-
-
-def quick_sort(nums):
-    q_sort(nums, 0, len(nums)-1)
-</code></pre>
-<h3 id="方法2交换">方法2：交换</h3>
-<p>在方法1的思路上，修改为交换两个位置的元素</p>
-<pre><code class="language-Python">def partition(nums, l, r):
-    pivot = nums[l]
-    start = l
-    while l &lt; r:
-        while l &lt; r and nums[r] &gt; pivot:
-            r -= 1
-        while l &lt; r and nums[l] &lt;= pivot:
-            l += 1
-        if l &lt; r:
-            nums[l], nums[r] = nums[r], nums[l]
-    nums[start], nums[l] = nums[l], nums[start]
-    return l
-</code></pre>
-<h3 id="方法3区间维护">方法3：区间维护</h3>
-<p>《算法导论》上面的写法：通过从左到右一次遍历，两个指针，比较并交换元素来维护区间 <code>[l, i]</code> 和 <code>(i, j)</code> 中的元素小于/大于 pivot</p>
-<pre><code class="language-Python">def partition(nums, l, r):
-    pivot = nums[r]
-    i = l - 1
-    for j in range(l, r):
-        if nums[j] &lt;= pivot:
-            i += 1
-            nums[i], nums[j] = nums[j], nums[i]
-    nums[i+1], nums[r] = nums[r], nums[i+1]
-    return i+1
-</code></pre>
-<p>其实还有一些其它的写法，不过大同小异，掌握核心思路就行。</p>
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[Effective C++ 笔记（08）]]></title>
-        <id>https://Miaite.github.io/post/CvQvuRPWt/</id>
-        <link href="https://Miaite.github.io/post/CvQvuRPWt/">
-        </link>
-        <updated>2020-11-19T08:11:46.000Z</updated>
-        <summary type="html"><![CDATA[<p>本篇笔记包含 Term 49~55。</p>
-]]></summary>
-        <content type="html"><![CDATA[<p>本篇笔记包含 Term 49~55。</p>
-<!-- more -->
-<h2 id="term-49了解-new-handler-的行为">Term 49：了解 new-handler 的行为</h2>
-<p>当 operator new 无法满足内存分配需求时，会抛出异常，且在此之前，会先调用用户设置的错误处理函数（即 new-handler）。通过 <code>std::set_new_handler</code> 可以设置 new-handler，要使其设计良好，需要满足以下条件：</p>
-<ol>
-<li>让更多内存可被使用</li>
-<li>安装另一个 new-handler：设置调用另一个可能解决问题的 new-handler</li>
-<li>卸除 new-handler：将 null 指针传给 set_new_handler。没有安装 new-handler 时 operator new 分配失败抛出异常</li>
-<li>不返回：通常调用 abort 或 exit</li>
-</ol>
-<p>C++ 没有直接为 class 定制 new-handler 的语法，但我们仍然可以办到：</p>
-<pre><code class="language-C++">template &lt;typename T&gt;
-class NewHandlerSupport {  // mixin 风格的 base class，用以支持 class 专属的 set_new_handler
- public:
-  static std::new_handler set_new_handler(std::new_handler) throw();
-  static void* operator new(std::size_t size) throw(std::bad_alloc);
-
- private:
-  static std::new_handler currentHandler;
-};
-template &lt;typename T&gt;
-std::new_handler NewHandlerSupport&lt;T&gt;::set_new_handler(std::new_handler p) throw() {
-  std::new_handler oldHandler = currentHandler;
-  currentHandler = p;
-  return oldHandler;
-}
-template &lt;typename T&gt;
-void* NewHandlerSupport&lt;T&gt;::operator new(std::size_t size) throw(std::bad_alloc) {
-  NewHandlerSupport h(std::set_new_handler(currentHandler));
-  return ::operator new(size);
-}
-template &lt;typename T&gt;
-std::new_handler NewHandlerSupport&lt;T&gt;::currentHandler = 0;  // 将 currentHandler 初始化为 null
-// 使用方式如下
-class Widget: public NewHandlerSupport&lt;Widget&gt; { ... } // 以自身类型继承这样一个模板类就足够
-</code></pre>
-<h2 id="term-50了解-new-和-delete-的合理替换时机">Term 50：了解 new 和 delete 的合理替换时机</h2>
-<p>使用自定义的 operator new 和 operator delete 的合理使用场景：</p>
-<ol>
-<li>用来检测运用错误</li>
-<li>收集动态分配内存的统计数据</li>
-<li>增加分配和归还的速度</li>
-<li>降低默认内存管理器带来的额外开销</li>
-<li>实现内存地址对齐（alignment）</li>
-<li>将相关的对象成簇集中，降低缺页中断的概率，因为它们很可能同时被调用</li>
-<li>实现一些特定行为，例如在归还内存时将内容抹除</li>
-</ol>
-<h2 id="term-51编写-new-和-delete-时需固守常规">Term 51：编写 new 和 delete 时需固守常规</h2>
-<p>operator new 分配成功时返回指针，不成功则调用 new-handler，可能会再尝试分配，所有的 new-handler 失败，则抛出 bad_alloc 异常。在设计自定义的 operator new 和 operator delete 过程中，需要注意：</p>
-<ol>
-<li>即使请求的是 0 byte， operator new 也要返回一个合法的指针，则可以简单地将 0 视为 1</li>
-<li>operator new 应该内含无穷循环来实现上面那段话</li>
-<li>class 专属版本的 operator new 应该处理错误大小的分配请求，比如被派生类继承之后，对派生类使用（基类的） new 会造成大小错误</li>
-<li>operator delete 应该在收到 null 指针时不做任何事</li>
-<li>class 专属版本的 operator delete 应该处理错误大小的分配请求</li>
-</ol>
-<h2 id="term-52写了-placement-new-也要写-placement-delete">Term 52：写了 placement new 也要写 placement delete</h2>
-<ol>
-<li>编写了 placement new 也要写 placement delete，否则可能会造成内存泄漏</li>
-<li>声明  placement new 和 placement delete 时，要注意不要遮蔽了它们的正常版本</li>
-</ol>
-<h2 id="term-53不要轻忽编译器的警告">Term 53：不要轻忽编译器的警告</h2>
-<ol>
-<li>认真考虑编译器的警告</li>
-<li>不同编译器针对相同代码的警告处理可能不一样</li>
-</ol>
-<h2 id="term-54让自己熟悉包括-tr1-在内的标准程序库">Term 54：让自己熟悉包括 TR1 在内的标准程序库</h2>
-<p>如题。</p>
-<h2 id="term-55让自己熟悉-boost">Term 55：让自己熟悉 Boost</h2>
-<p>在 Modern C++ 的时代，Boost 的应用意义已经不如从前。但在熟悉标准程序库之后，Boost 仍是很好的学习对象，它包含了可能在未来会纳入标准程序库的一些东西。</p>
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[Effective C++ 笔记（07）]]></title>
-        <id>https://Miaite.github.io/post/sF-ehhx1o/</id>
-        <link href="https://Miaite.github.io/post/sF-ehhx1o/">
-        </link>
-        <updated>2020-11-17T12:33:03.000Z</updated>
-        <summary type="html"><![CDATA[<p>本篇笔记包含 Term 41~48。</p>
-]]></summary>
-        <content type="html"><![CDATA[<p>本篇笔记包含 Term 41~48。</p>
-<!-- more -->
-<h2 id="term-41了解隐式接口和编译期多态">Term 41：了解隐式接口和编译期多态</h2>
-<ol>
-<li>classes 和 templates 都支持接口和多态</li>
-<li>对 classes 而言接口时显式的，以函数签名（函数名、参数类型、返回类型）为中心。多态则通过 virtual 函数发生与运行期</li>
-<li>对 templates 参数而言，接口是隐式的，基于有效表达式。多态则是通过 template 具现化和函数重载解析发生与编译期</li>
-</ol>
-<h2 id="term-42了解-typename-的双重意义">Term 42：了解 typename 的双重意义</h2>
-<ol>
-<li>声明 template 参数时，前缀关键字 class 和 typename 同义</li>
-<li>需要使用关键字 typename 标识嵌套从属类型名称；但不得在 base class lists（基类列）或 member initialization list 内以它作为 base class 修饰符</li>
-</ol>
-<pre><code class="language-C++">template &lt;typename C&gt;               // 可以使用 typename 或者 class
-void f(const C&amp; container,          // 不能使用 typename
-       typename C::iterator iter);  // 应该使用 typename
-
-template &lt;typename T&gt;
-class Drived : public Base&lt;T&gt;::Nested {  // 不使用 typename
- public:
-  explicit Derived(int x) : Base&lt;T&gt;::Nested(x) {  // 不使用 typename
-    typename Base&lt;T&gt;::Nested tmp;                 // 使用 typename
-  }
-};
-</code></pre>
-<h2 id="term-43学习处理模板化基类内的名称">Term 43：学习处理模板化基类内的名称</h2>
-<p>派生类继承模板化基类的情况中，如果直接调用基类中的成员，会无法通过编译，因为编译器<strong>无法知道具体继承自哪个基类</strong>（假如基类被特化，可能根本不包含被调用的成员）。为了解决这个问题，有3种方法：</p>
-<ol>
-<li>使用 <code>this-&gt;</code></li>
-<li>使用 <code>using</code></li>
-<li>明确指明使用 base class 版本（不推荐，相当于关闭了 virtual）</li>
-</ol>
-<pre><code class="language-C++">template &lt;typename Company&gt;
-class LoggingMsgSender: public MsgSender&lt;Company&gt; {  // MsgSender 中包含 sendClear() 函数
- public:
-  using MsgSender&lt;Company&gt;::sendClear;  // 2.方法
-  void sendClearMsg(const MsgInfo&amp; info) {
-    sendClear(info);                      // 调用失败
-    this-&gt;sendClear(info);                // 1.方法
-    MsgSender&lt;Company&gt;::sendClear(info);  // 3.方法
-  }
-};
-</code></pre>
-<h2 id="term-44将与参数无关的代码抽离-template">Term 44：将与参数无关的代码抽离 template</h2>
-<ol>
-<li>Templates 生成多个 classes 和多个函数，所以任何 template 代码都不该与某个造成膨胀的 template 参数产生相依关系</li>
-<li>因非类型模板参数（non-type template parameters）而造成的代码膨胀，往往可<strong>消除</strong>，做法是以函数参数或 class 成员变量替换 template 参数</li>
-<li>因类型参数（type parameters）而造成的代码膨胀，往往可<strong>降低</strong>，做法是让带有完全相同二进制表述（binary representations）的具现类型（instantiation types）共享实现码</li>
-</ol>
-<h2 id="term-45运用成员函数模板接受所有兼容类型">Term 45：运用成员函数模板接受所有兼容类型</h2>
-<p>智能指针是很好用的东西，但是存在一个问题，其模板写法不能支持隐式的类型转换。真实的指针则可以做到，示例就是派生类指针可以隐式转换为基类指针。为了在使用智能指针时也能达到此效果，需要这样编写程序：</p>
-<pre><code class="language-C++">template &lt;typename T&gt;
-class SmartPtr {
- public:
-  template &lt;typename U&gt;
-  SmartPtr(const SmartPtr&lt;U&gt;&amp; other) : heldPrt(other.get()) { /*...*/ } // 支持隐式转换的 copy 构造函数模板
-  T* get() const { return heldPtr; }  // 假设通用接口 get() 获取原始指针
-
- private:
-  T* heldPtr;  // 原始指针
-};
-</code></pre>
-<p>跟上面的操作一样，copy 赋值操作符也可以进行泛化。需注意，函数模板不会覆盖编译器自动生成的 copy 构造函数和copy 赋值操作符。</p>
-<h2 id="term-46需要类型转换时请为模板定义非成员函数">Term 46：需要类型转换时请为模板定义非成员函数</h2>
-<p>Term 24 提到应使用 non-member 函数对所有实参进行类型转换。在使用模板时，情况有一点变化，我们仍然应该编写一个 non-member 函数，然后再 class 中定义 friend 函数并调用外面的 non-member 函数。</p>
-<pre><code class="language-C++">template &lt;typename T&gt; class Rational; // 声明类
-template &lt;typename T&gt;
-const Rational&lt;T&gt; doMultiply(const Rational&lt;T&gt;&amp; lhs, const Rational&lt;T&gt;&amp; rhs); // 声明 helper
-
-template &lt;typename T&gt;
-class Rational {
- public:
-  friend const Rational&lt;T&gt; operator*(const Rational&lt;T&gt;&amp; lhs, const Rational&lt;T&gt;&amp; rhs) { // 调用 helper
-    return doMultiply(lhs, rhs);
-  }
-};
-
-template &lt;typename T&gt;
-const Rational&lt;T&gt; doMultiply(const Rational&lt;T&gt;&amp; lhs, const Rational&lt;T&gt;&amp; rhs) { ... } // 定义 helper
-</code></pre>
-<h2 id="term-47请使用-traits-classes-表现类型信息">Term 47：请使用 traits classes 表现类型信息</h2>
-<ol>
-<li>Traits classes 使得“类型相关信息”在编译器可用。它们以 templates 技术、typedef 表示类型和 “templates 特化”完成实现</li>
-<li>Traits classes 通过重载，在编译器对类型执行 if...else 测试</li>
-</ol>
-<h2 id="term-48认识-template-元编程">Term 48：认识 template 元编程</h2>
-<p>Template 元编程（TMP）是执行与编译器的过程，通过 template 产生更多源码。TMP 的贡献在于，将一些运行期的工作带到了编译期执行，通常会产生出更加高效的程序，并且在编译期就发现一些问题。TMP 单独来说已经是图灵完全机器，但是编写 TMP 代码会比“一般”C++ 难得多。</p>
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[Effective C++ 笔记（06）]]></title>
-        <id>https://Miaite.github.io/post/N2VZ5x8wW/</id>
-        <link href="https://Miaite.github.io/post/N2VZ5x8wW/">
-        </link>
-        <updated>2020-11-15T07:39:08.000Z</updated>
-        <summary type="html"><![CDATA[<p>本篇笔记包含 Term 32~40。</p>
-]]></summary>
-        <content type="html"><![CDATA[<p>本篇笔记包含 Term 32~40。</p>
-<!-- more -->
-<h2 id="term-32确定你的-public-继承塑模出-is-a-关系">Term 32：确定你的 public 继承塑模出 is-a 关系</h2>
-<p>public 继承意味着 is-a 关系。适用于 base classes 的每一件事情同样适用于 derived classes。</p>
-<h2 id="term-33避免遮掩继承而来的名称">Term 33：避免遮掩继承而来的名称</h2>
-<p>和局部/全局作用域类似，派生类/基类的成员也有这样的作用域覆盖关系。</p>
-<ol>
-<li>derived classes 内的名称会遮掩 base classes 内的名称（包括参数类型不同的函数）。在 public 继承下不应如此。</li>
-<li>可以使用 <code>using</code> 声明式或者转交函数让被遮掩的名称恢复</li>
-</ol>
-<pre><code class="language-C++">class Base {
- public:
-  virtual void mf1() = 0;
-  virtual void mf1(int);
-  void mf2();
-  void mf2(double);
-  ......
-};
-class Derived : public Base {
- public:
-  using Base::mf1;  // 让 Base::mf1 可见
-  virtual void mf1();
-  void mf2() { Base::mf2(); };  // 实际调用了 Base::mf2()
-  ......
-};
-......
-Derived d;
-int x;
-double y;
-d.mf1();   // 调用 Derived::mf1()
-d.mf1(x);  // 调用 Base::mf1(int)
-d.mf2();   // 调用了 Derived::mf2()，内部实际调用了 Base::mf2()
-d.mf2(y);  // 不可行，被遮蔽
-</code></pre>
-<h2 id="term-34区分接口继承和实现继承">Term 34：区分接口继承和实现继承</h2>
-<ol>
-<li>接口继承和实现继承是不同的，在 public 继承下，derived classes 总是继承 base classes 的接口</li>
-<li>pure virtual 函数继承接口</li>
-<li>impure virtual 函数继承接口和缺省实现</li>
-<li>non-virtual 函数继承接口和强制实现，不应该在 derived classes 中 override</li>
-</ol>
-<h2 id="term-35考虑-virtual-函数以外的其它选择">Term 35：考虑 virtual 函数以外的其它选择</h2>
-<p>利用 virtual 函数去实现某些功能可能并非最佳选择，可以考虑一些其它的办法：</p>
-<ol>
-<li>使用 non-virtual interface(NVI) 手法，以 public non-virtual 成员函数包裹访问性较低的（private） virtual 函数，这是 <strong>Template Method</strong> 设计模式的一种特殊形式</li>
-<li>将 virtual 函数替换为“函数指针成员变量”，这是 <strong>Stratege</strong> 设计模式的一种分解形式</li>
-<li>进一步，将 2. 中的函数指针替换为 <code>tr1::function</code>，则只要能兼容相应的参数的可调用对象都可以被应用上</li>
-<li>对于 3. 中的可调用对象，可以以（继承的）类去实现，相当于抽取出 virtual 函数的功能，在另一个类中实现</li>
-<li>2./3./4. 带来的缺点是，无法访问 non-public 成员</li>
-</ol>
-<h2 id="term-36绝不重新定义继承而来的-non-virtual-函数">Term 36：绝不重新定义继承而来的 non-virtual 函数</h2>
-<p>这样会造成一些混乱，比如，以一个基类指针指向派生类对象时，调用的 non-virtual 函数会是基类的版本。原因在于静态绑定。</p>
-<h2 id="term-37绝不重新定义继承而来的缺省参数值">Term 37：绝不重新定义继承而来的缺省参数值</h2>
-<p>不要重新定义继承而来的缺省参数值，它是静态绑定，而 virtual 函数是动态绑定。</p>
-<h2 id="term-38通过复合塑模出-has-a-或者根据某物实现出">Term 38：通过复合塑模出 has-a 或者“根据某物实现出”</h2>
-<p>对于 has-a 或者“根据某物实现出”的情况，需要做的不是继承，而是在自己编写的类中使用需要用到的类的对象。</p>
-<h2 id="term-39明智而审慎地使用-private-继承">Term 39：明智而审慎地使用 private 继承</h2>
-<ol>
-<li>private 继承意味着“根据某物实现出”这种情况，它通常比复合级别低，在需要访问 protect成员或者需要 override virtual 函数时，这样的设计时合理的</li>
-<li>private 继承在大多数编译器中可以实现 empty base optimization，这对空间敏感的开发任务有效</li>
-</ol>
-<h2 id="term-40明智而审慎地使用多重继承">Term 40：明智而审慎地使用多重继承</h2>
-<ol>
-<li>多重继承可能导致歧义性，以及对 virtual 继承的需要</li>
-<li>virtual 继承会增加各方面成本，最佳情况时不带任何数据</li>
-<li>多重继承在某些情况确实有用，比如 public 继承一个接口 class，同时 private 继承一个实现 class</li>
-<li>尽量不要使用多重继承</li>
-</ol>
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[Effective C++ 笔记（05）]]></title>
-        <id>https://Miaite.github.io/post/Lxmd6dG5E/</id>
-        <link href="https://Miaite.github.io/post/Lxmd6dG5E/">
-        </link>
-        <updated>2020-11-11T11:48:56.000Z</updated>
-        <summary type="html"><![CDATA[<p>本篇笔记包含 Term 26~31。</p>
-]]></summary>
-        <content type="html"><![CDATA[<p>本篇笔记包含 Term 26~31。</p>
-<!-- more -->
-<h2 id="term-26尽可能延后变量定义式出现时间">Term 26：尽可能延后变量定义式出现时间</h2>
-<p>定义一个变量（或者对象）对调用其构造函数，因此最好时在需要的时刻才去定义并初始化。至于只在循环内使用的变量通常定义在<strong>循环内</strong>，除非明确知道赋值比构造+析构更加高效而且确实有必要时，才将其定义在循环外。</p>
-<h2 id="term-27尽量少做转型动作">Term 27：尽量少做转型动作</h2>
-<ol>
-<li>如果可以，尽量避免转型，特别是避免低效的 dynamic_casts，优先尝试其它的解决方案</li>
-<li>如果转型是必要的，试着将它隐藏与函数之中</li>
-<li>不要使用 C 风格的转型</li>
-</ol>
-<h2 id="term-28避免返回-handles-指向对象内部成分">Term 28：避免返回 handles 指向对象内部成分</h2>
-<p>避免返回 handles（包括指针、引用、迭代器）指向对象内部成分。这样可以增加封装性，并且避免 handle 在对象被销毁后指向空。</p>
-<h2 id="term-29为异常安全而努力是值得的">Term 29：为“异常安全”而努力是值得的</h2>
-<ol>
-<li>异常安全函数即使发生异常也不会泄漏资源或允许任何数据结构破坏</li>
-<li>异常安全函数三种保证：基本型（保证程序有效）、强烈型（保证程序回到之前的状态）、不抛异常型</li>
-<li>强烈保证往往能够以 copy-and-swap 实现出来，但强烈保证并非对所有函数都可以实现或具备现实意义</li>
-<li>函数提供的异常安全保证通常等于其所调用的函数中异常安全保证最弱的那个（木桶效应）</li>
-</ol>
-<h2 id="term-30透彻了解-inlining-的里里外外">Term 30：透彻了解 inlining 的里里外外</h2>
-<p>inline 是编译器可选的操作，实际取决于具体编译器的平台和版本等。</p>
-<ol>
-<li>定义于 class 内的函数是一种隐式 inline 请求</li>
-<li>inline 应当用于小型的、调用频繁的函数，避免代码膨胀，使调试和程序升级的过程也变得更加容易</li>
-</ol>
-<h2 id="term-31将文件间的编译依存关系降至最低">Term 31：将文件间的编译依存关系降至最低</h2>
-<p>降低文件间的编译依存关系有助于减少编译的工作量</p>
-<ol>
-<li>支持“编译依存性最小化”的一般构想是：相依与声明式，不要相依于定义式。基于此构想的两个手段是 Handle classes 和 Interface classes</li>
-<li>程序库头文件应该以“完全且仅有声明式”的形式存在</li>
-</ol>
 ]]></content>
     </entry>
 </feed>

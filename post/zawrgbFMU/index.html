@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" >
 
-<title>Effective C++ 笔记（04） | A Blog of Miaite</title>
+<title>Effective Modern C++ 笔记（01） | A Blog of Miaite</title>
 <meta name="description" content="一些流水账，技术笔记为主">
 
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
@@ -81,67 +81,123 @@
       <div class="sm-12 md-8 col">
         <div class="paper">
           <article class="article">
-            <h1>Effective C++ 笔记（04）</h1>
+            <h1>Effective Modern C++ 笔记（01）</h1>
             <p class="article-meta">
-              2020-11-10
+              2021-05-18
               
-                <a href="https://Miaite.github.io/tag/U4pTdc1co/" class="badge secondary">
+                <a href="https://Miaite.github.io/tag/U4pTdc1co/" class="badge warning">
                   C++从入门到入坟
                 </a>
               
             </p>
             
-              <img src="https://img3.doubanio.com/view/subject/l/public/s4647091.jpg" alt="Effective C++ 笔记（04）">
+              <img src="https://upload-images.jianshu.io/upload_images/5181399-a7f086c0aefa24cd.jpg?imageMogr2/auto-orient/strip|imageView2/2/w/1080/format/webp" alt="Effective Modern C++ 笔记（01）">
             
             <div class="post-content">
-              <p>本篇笔记包含 Term 18~25。</p>
+              <p>本篇笔记包含 Term 01~06。</p>
 <!-- more -->
-<h2 id="term-18让接口容易被正确使用不易被误用">Term 18：让接口容易被正确使用，不易被误用</h2>
-<p>这一点其实比较难做到，可以参考这几个方面：</p>
+<h2 id="term-01理解模板型别推导">Term 01：理解模板型别推导</h2>
+<p>C++ 中的类型推导机制应用于模板、<code>auto</code> 和 <code>decaltype</code></p>
+<pre><code class="language-c++">template&lt;typename T&gt;
+void f(ParamType param);    // ParamType 可以是  T/T*/T&amp; 等
+f(expr) // call the function
+</code></pre>
 <ol>
-<li>接口的一致性，与内置类型（包括 STL）的行为兼容</li>
-<li>防止误用包括建立新类型、限制类型上的操作、束缚对象的值以及自动管理资源</li>
-<li>shared_ptr 支持定制型 deleter，可以防范 DLL 问题，可用来自动解除互斥锁</li>
-</ol>
-<h2 id="term-19设计-class-犹如设计-type">Term 19：设计 class 犹如设计 type</h2>
-<p>在 C++ 中，设计一个通用的 class 就是设计一个新的类型，需要考虑以下一些方面：</p>
-<ol>
-<li>新 type 的对象应该如何被创建和销毁？</li>
-<li>对象的初始化和对象的赋值该有什么样的差别？调用不同的函数</li>
-<li>新 type 的对象如果被 passed by value，意味着什么？会调用 copy 构造函数</li>
-<li>什么是新 type 的合法值？</li>
-<li>你的新 type 需要配合某个继承图系吗？继承自某个 class 或者允许被继承有不同的设计要点</li>
-<li>你的新 type 需要什么样的转换？考虑是否需要在不同的 class 对象之间转换，设计显式/隐式转换</li>
-<li>什么样的操作符和函数对此新 type 而言是合理的？</li>
-<li>什么样的标准函数应该驳回？禁用编译器自动生成的函数</li>
-<li>谁该取用新 type 的成员？考虑如何设置 public/protect/private 成员以及 friends</li>
-<li>什么是新 type 的 undeclared interface？</li>
-<li>你的新 type 有多么一般化？考虑定义一个新的 class template</li>
-<li>你真的需要一个新 type 吗？也许通过多个函数或者 template 就能达到需要</li>
-</ol>
-<h2 id="term-20宁以-pass-by-reference-const-替换-pass-by-value">Term 20：宁以 pass-by-reference-const 替换 pass-by-value</h2>
-<p>C++ 默认以 value 形式进行传递，这会带来大量的复制消耗，而且可能造成对象切割（slicing）问题。以 reference 传递会高效很多。但也有例外，内置类型、STL 迭代器以及函数对象以 value 传递更加合适。</p>
-<h2 id="term-21必须返回对象时别妄想返回器-reference">Term 21：必须返回对象时，别妄想返回器 reference</h2>
-<p>返回 pointer/reference 指向 local 对象是错误行为，指向 local static 也是愚蠢的行为（但可行），reference 指向 heap-allocated 对象会内存泄漏。</p>
-<h2 id="term-22将成员变量声明为-private">Term 22：将成员变量声明为 private</h2>
-<p>简单来说，就是为了提高 class 的封装性</p>
-<h2 id="term-23宁以-non-menber-non-friend-替换-member-函数">Term 23：宁以 non-menber、non-friend 替换 member 函数</h2>
-<p>这样既可以增加 class 的封装性，也可以让函数更容易扩充。</p>
-<h2 id="term-24若所有参数皆需类型转换请为此采用-non-menber-函数">Term 24：若所有参数皆需类型转换，请为此采用 non-menber 函数</h2>
-<p>采用 non-menber 函数可以进行合适的隐式类型转换。</p>
-<h2 id="term-25考虑写出一个不抛出异常的-swap-函数">Term 25：考虑写出一个不抛出异常的 swap 函数</h2>
-<p>STL 中默认的 swap 函数会调用 copy 构造函数和 copy 赋值运算符，在某些情况下带来不必要的性能损耗。可以考虑的改写思路：</p>
-<ol>
-<li>添加一个用于 swap 的 public member 函数（不能抛出异常）</li>
-<li>在 class 或者 template 的命名空间提供一个 non-member 函数 swap，用这个函数调用 1. 中的 member 函数 swap。这点可适用于 class template</li>
-<li>特化 std::swap 来调用 member 函数 swap</li>
-<li>用户使用 swap 时应当使用 <code>using std::swap;</code></li>
+<li>ParamType 是引用或者指针，但不是万能引用</li>
 </ol>
 <pre><code class="language-c++">template&lt;typename T&gt;
-void doSomething(T&amp; obj1, T&amp; obj2){
-    using std::swap;    // 让 std::swap 在此函数内可见
-    swap(obj1, obj2);    // 自动选择最佳的 swap 版本
+void f(T&amp; param);
+int x = 1;
+const int cx = x;
+f(x);   // T: int, param: int&amp;
+f(cx);   // T: const int, param: const int&amp;
+</code></pre>
+<ol start="2">
+<li>ParamType 是万能引用，要区分实参是左值还是右值</li>
+</ol>
+<pre><code class="language-c++">template&lt;typename T&gt;
+void f(T&amp;&amp; param);
+int x = 1;
+const int cx = x;
+f(x);   // T: int, param: int&amp;
+f(cx);   // T: const int, param: const int&amp;
+f(27);  // T: int, param: int&amp;&amp;
+</code></pre>
+<ol start="3">
+<li>ParamType 是传值方式</li>
+</ol>
+<pre><code class="language-c++">template&lt;typename T&gt;
+void f(T param);
+int x = 1;
+const int cx = x;
+f(x);   // T: int, param: int
+f(cx);   // T: const int, param: int
+</code></pre>
+<ol start="4">
+<li>数组实参和函数实参可以从引用退化为指针</li>
+</ol>
+<pre><code class="language-c++">template&lt;typename T&gt;
+void f1(T param);
+template&lt;typename T&gt;
+void f2(T&amp; param);
+// void myFunc(int param[]); 完全等价于 void myFunc(int *param);
+const char name[] = &quot;J. P. Briggs&quot;; // name 的类型是 const char[13]
+const char * ptrToName = name; // ptrToName 的类型是 const char *
+f1(name); // T: const char *
+f2(name); // T: const char(&amp;)[13]
+</code></pre>
+<h2 id="term-02理解-auto-型别推导">Term 02：理解 auto 型别推导</h2>
+<p>auto 型别推导和 Term 1 中的模板基本一致，只需要注意两个特殊情况：</p>
+<ol>
+<li>统⼀初始化</li>
+</ol>
+<pre><code class="language-c++">auto x1={27};  // 类型是 std::initializer_list&lt;int&gt;,值是{27}
+auto x2{27}; // 类型是 std::initializer_list&lt;int&gt;,值是{27}
+</code></pre>
+<ol start="2">
+<li>auto 用于函数返回值或者 lambda 形参时，实际还是调用的模板推导机制</li>
+</ol>
+<h2 id="term-03理解-decaltype">Term 03：理解 decaltype</h2>
+<p>通常情况 decaltype 是符合直觉的，注意两个特殊情形：</p>
+<ol>
+<li>用于函数返回值</li>
+</ol>
+<pre><code class="language-c++">template&lt;typename Container, typename Index&gt; // 传入容器（支持 [] 运算符）和下标，返回元素引用类型
+decltype(auto) authAndAccess(Container&amp;&amp; c, Index i){
+    authenticateUser();
+    return std::forward&lt;Container&gt;(c)[i];   // 用到了 std::forward 实现完美转发参数
 }
+</code></pre>
+<ol start="2">
+<li>左值表达式</li>
+</ol>
+<pre><code class="language-c++">int x = 0;
+decltype((x));  // 推导为 int&amp;
+</code></pre>
+<h2 id="term-04掌握查看型别推导结果的方法">Term 04：掌握查看型别推导结果的方法</h2>
+<ol>
+<li>IDE</li>
+<li>编译器错误信息</li>
+</ol>
+<pre><code class="language-c++">template &lt;typename T&gt; // 只对TD进⾏声明
+class TD;
+TD&lt;decltype(x)&gt; xType; // 引出错误消息，类似于，error: aggregate 'TD&lt;int&gt; xType' has incomplete type and cannot be defined
+</code></pre>
+<ol start="3">
+<li>使用 <code>std::type_info::name</code> 或者 Boost.TypeIndex</li>
+<li>以上方法都不完全可靠</li>
+</ol>
+<h2 id="term-05优先选用-auto而非显式型别声明">Term 05：优先选用 auto，而非显式型别声明</h2>
+<p>尽量使用 <code>auto</code> 的优点：</p>
+<ol>
+<li>保证初始化</li>
+<li>用来表示只有编译器才掌握的型别</li>
+<li>避免初始化赋值时隐式类型转换</li>
+</ol>
+<h2 id="term-06当-auto-推导的型别不符合开发者本意时使用显式类型转换">Term 06：当 auto 推导的型别不符合开发者本意时，使用显式类型转换</h2>
+<p>假设我们在使用一个代理类设计的类，或者需要显式转换类型，使用如下代码写法是更清晰明了的：</p>
+<pre><code class="language-c++">auto index = static_cast&lt;int&gt;(d*c.size());  // c.size() 返回 float 类型的值
+auto priority = static_cast&lt;bool&gt;(features[3]); // features 是std::vector&lt;bool&gt; 类型，features[3] 返回 std::vector&lt;bool&gt;::reference 类型
 </code></pre>
 
             </div>
@@ -153,9 +209,9 @@ void doSomething(T&amp; obj1, T&amp; obj2){
               <div class="next">
                 下一篇
               </div>
-              <a href="https://Miaite.github.io/post/386I6Xacv/">
+              <a href="https://Miaite.github.io/post/ofvXkwiwL/">
                 <h3 class="post-title">
-                  Effective C++ 笔记（03）
+                  More Effective C++ 笔记（05）
                 </h3>
               </a>
             </div>
@@ -290,7 +346,7 @@ void doSomething(T&amp; obj1, T&amp; obj2){
           C++从入门到入坟
         </a>
       
-        <a href="https://Miaite.github.io/tag/Ardgjj5BS/" class="badge ">
+        <a href="https://Miaite.github.io/tag/Ardgjj5BS/" class="badge secondary">
           算法
         </a>
       

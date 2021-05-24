@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" >
 
-<title>Effective C++ 笔记（04） | A Blog of Miaite</title>
+<title>Effective Modern C++ 笔记（06） | A Blog of Miaite</title>
 <meta name="description" content="一些流水账，技术笔记为主">
 
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
@@ -81,9 +81,9 @@
       <div class="sm-12 md-8 col">
         <div class="paper">
           <article class="article">
-            <h1>Effective C++ 笔记（04）</h1>
+            <h1>Effective Modern C++ 笔记（06）</h1>
             <p class="article-meta">
-              2020-11-10
+              2021-05-23
               
                 <a href="https://Miaite.github.io/tag/U4pTdc1co/" class="badge secondary">
                   C++从入门到入坟
@@ -91,58 +91,92 @@
               
             </p>
             
-              <img src="https://img3.doubanio.com/view/subject/l/public/s4647091.jpg" alt="Effective C++ 笔记（04）">
+              <img src="https://upload-images.jianshu.io/upload_images/5181399-a7f086c0aefa24cd.jpg?imageMogr2/auto-orient/strip|imageView2/2/w/1080/format/webp" alt="Effective Modern C++ 笔记（06）">
             
             <div class="post-content">
-              <p>本篇笔记包含 Term 18~25。</p>
+              <p>本篇笔记包含 Term 35~。</p>
 <!-- more -->
-<h2 id="term-18让接口容易被正确使用不易被误用">Term 18：让接口容易被正确使用，不易被误用</h2>
-<p>这一点其实比较难做到，可以参考这几个方面：</p>
+<h2 id="term-35优先选用基于任务而非基于线程的程序设计">Term 35：优先选用基于任务而非基于线程的程序设计</h2>
 <ol>
-<li>接口的一致性，与内置类型（包括 STL）的行为兼容</li>
-<li>防止误用包括建立新类型、限制类型上的操作、束缚对象的值以及自动管理资源</li>
-<li>shared_ptr 支持定制型 deleter，可以防范 DLL 问题，可用来自动解除互斥锁</li>
+<li><code>std::thread</code> 的 API 并未提供直接获取异步运算函数返回值的途径，而且如果函数出现异常，程序会终止</li>
+<li>基于线程的程序设计要求手动管理处理线程资源耗尽、超订、负载均衡、跨平台等问题</li>
+<li>使用 async 可以很大程度避免 2. 中的问题</li>
 </ol>
-<h2 id="term-19设计-class-犹如设计-type">Term 19：设计 class 犹如设计 type</h2>
-<p>在 C++ 中，设计一个通用的 class 就是设计一个新的类型，需要考虑以下一些方面：</p>
+<h2 id="term-36如果异步是必要的则指定-stdlaunchasync">Term 36：如果异步是必要的则指定 std::launch::async</h2>
 <ol>
-<li>新 type 的对象应该如何被创建和销毁？</li>
-<li>对象的初始化和对象的赋值该有什么样的差别？调用不同的函数</li>
-<li>新 type 的对象如果被 passed by value，意味着什么？会调用 copy 构造函数</li>
-<li>什么是新 type 的合法值？</li>
-<li>你的新 type 需要配合某个继承图系吗？继承自某个 class 或者允许被继承有不同的设计要点</li>
-<li>你的新 type 需要什么样的转换？考虑是否需要在不同的 class 对象之间转换，设计显式/隐式转换</li>
-<li>什么样的操作符和函数对此新 type 而言是合理的？</li>
-<li>什么样的标准函数应该驳回？禁用编译器自动生成的函数</li>
-<li>谁该取用新 type 的成员？考虑如何设置 public/protect/private 成员以及 friends</li>
-<li>什么是新 type 的 undeclared interface？</li>
-<li>你的新 type 有多么一般化？考虑定义一个新的 class template</li>
-<li>你真的需要一个新 type 吗？也许通过多个函数或者 template 就能达到需要</li>
-</ol>
-<h2 id="term-20宁以-pass-by-reference-const-替换-pass-by-value">Term 20：宁以 pass-by-reference-const 替换 pass-by-value</h2>
-<p>C++ 默认以 value 形式进行传递，这会带来大量的复制消耗，而且可能造成对象切割（slicing）问题。以 reference 传递会高效很多。但也有例外，内置类型、STL 迭代器以及函数对象以 value 传递更加合适。</p>
-<h2 id="term-21必须返回对象时别妄想返回器-reference">Term 21：必须返回对象时，别妄想返回器 reference</h2>
-<p>返回 pointer/reference 指向 local 对象是错误行为，指向 local static 也是愚蠢的行为（但可行），reference 指向 heap-allocated 对象会内存泄漏。</p>
-<h2 id="term-22将成员变量声明为-private">Term 22：将成员变量声明为 private</h2>
-<p>简单来说，就是为了提高 class 的封装性</p>
-<h2 id="term-23宁以-non-menber-non-friend-替换-member-函数">Term 23：宁以 non-menber、non-friend 替换 member 函数</h2>
-<p>这样既可以增加 class 的封装性，也可以让函数更容易扩充。</p>
-<h2 id="term-24若所有参数皆需类型转换请为此采用-non-menber-函数">Term 24：若所有参数皆需类型转换，请为此采用 non-menber 函数</h2>
-<p>采用 non-menber 函数可以进行合适的隐式类型转换。</p>
-<h2 id="term-25考虑写出一个不抛出异常的-swap-函数">Term 25：考虑写出一个不抛出异常的 swap 函数</h2>
-<p>STL 中默认的 swap 函数会调用 copy 构造函数和 copy 赋值运算符，在某些情况下带来不必要的性能损耗。可以考虑的改写思路：</p>
+<li><code>std::async</code> 的默认启动策略不保证任务以异步方式执行</li>
+<li>
 <ol>
-<li>添加一个用于 swap 的 public member 函数（不能抛出异常）</li>
-<li>在 class 或者 template 的命名空间提供一个 non-member 函数 swap，用这个函数调用 1. 中的 member 函数 swap。这点可适用于 class template</li>
-<li>特化 std::swap 来调用 member 函数 swap</li>
-<li>用户使用 swap 时应当使用 <code>using std::swap;</code></li>
+<li>中的方式可能导致线程局部变量不确定，任务永远无法完成（deferred 方式执行）等问题</li>
 </ol>
-<pre><code class="language-c++">template&lt;typename T&gt;
-void doSomething(T&amp; obj1, T&amp; obj2){
-    using std::swap;    // 让 std::swap 在此函数内可见
-    swap(obj1, obj2);    // 自动选择最佳的 swap 版本
+</li>
+<li>指定 <code>std::async</code> 的启动策略可以避免上述问题。<code>auto fut = std::async(std::launch::async | std::launch::deferred, f);</code></li>
+</ol>
+<h2 id="term-37使-stdtread-型别对象在所有路径都-unjionable">Term 37：使 std::tread 型别对象在所有路径都 unjionable</h2>
+<p>unjionable 状态表示该 <code>std::tread</code> 处于安全结束的状态，在编写多线程程序时应当达到这个要求。然而考虑所有路径的情况是复杂的，包括 return、break、goto、异常跳出等多种情况，合适的方法是使用 RAII 对象来管理。</p>
+<pre><code class="language-c++">class ThreadRAII {
+ public:
+  enum class DtorAction { join, detach };
+  ThreadRAII(std::thread&amp;&amp; t, DtorAction a): action(a), t(std::move(t)) {}
+  ~ThreadRAII() {
+    if (t.joinable()) {
+      if (action == DtorAction::join) {
+        t.join();
+      } else {
+        t.detach();
+      }
+    }
+  }
+  ThreadRAII(ThreadRAII&amp;&amp;) = default;
+  ThreadRAII&amp; operator=(ThreadRAII&amp;&amp;) = default;
+  std::thread&amp; get() { return t; };
+ private:
+  DtorAction action;
+  std::thread t;
+};
+</code></pre>
+<h2 id="term-38对变化多端的线程-handle-析构函数行为保持关注">Term 38：对变化多端的线程 handle 析构函数行为保持关注</h2>
+<ol>
+<li>future 的正常析构⾏为就是销毁 future 本⾝的成员数据</li>
+<li>最后⼀个引⽤ <code>std::async</code> 创建的共享状态的 future 的析构函数会在任务结束前保持阻塞</li>
+</ol>
+<h2 id="term-39考虑针对一次性事件通信使用以-void-为模板型别实参的-future">Term 39：考虑针对一次性事件通信使用以 void 为模板型别实参的 future</h2>
+<pre><code class="language-c++">std::promise&lt;void&gt; p;
+void detect() {
+  auto sf = g.get_future().share();  // sf 的型别是 std::shared_future&lt;void&gt;
+  std::vector&lt;std::thread&gt; vt;
+  for (int i = 0; i &lt; threadsToRun; ++i) {
+    vt.emplace_back([sf] {
+      sf.wait();
+      react();
+    });
+  }
+  ...  // 若此段省略内容抛出异常，detect 函数会失去响应
+  p.set_value();  // 让所有线程取消暂停
+  ...
+  for (auto&amp; t : vt) {  // make all threads unjoinable
+    t.join();
+  }
 }
 </code></pre>
+<h2 id="term-40对并发使用-stdatomic对特种内存使用-volatile">Term 40：对并发使用 std::atomic，对特种内存使用 volatile</h2>
+<ol>
+<li><code>std::atomic</code> 用于多线程访问的数据，且不用于互斥量</li>
+<li><code>volatile</code> 用于读写操作不可以被优化掉的内存，它会让编译器执行每一次内存操纵，而不能优化省略掉中间步骤（例如几条临近的语句都对同一个变量进行赋值的情形）</li>
+</ol>
+<h2 id="term-41针对可复制的形参在移动成本低且一定会被复制的前提下考虑将其按值传递">Term 41：针对可复制的形参，在移动成本低且一定会被复制的前提下，考虑将其按值传递</h2>
+<ol>
+<li>对于可复制的，移动成本低的，而且一定会被复制的形参而言，按值传递和按引用传递效率接近，而且按值传递目标代码更少</li>
+<li>copy 构造函数拷贝形参可能比赋值运算符拷贝形参的成本高出不少</li>
+<li>按值传递肯定会导致 slicing 问题，所以基类类型不适合按值传递</li>
+</ol>
+<h2 id="term-42考虑置入而非插入">Term 42：考虑置入而非插入</h2>
+<p>以 <code>std::vector</code> 为例，置入是 emplace_back，插入是 push_back</p>
+<ol>
+<li>置入函数有时比插入更高效，且不会有比插入低效的可能</li>
+<li>置入函数更高效情形的条件：1）待添加物的值是以构造而非赋值方式加入容器；2）传递的实参型别与容器内容物的型别不同；3）容器不会由于存在重复值而拒绝添加</li>
+<li>置入函数可能会执行在插入函数中会被拒绝的型别转换</li>
+</ol>
 
             </div>
           </article>
@@ -153,9 +187,9 @@ void doSomething(T&amp; obj1, T&amp; obj2){
               <div class="next">
                 下一篇
               </div>
-              <a href="https://Miaite.github.io/post/386I6Xacv/">
+              <a href="https://Miaite.github.io/post/wt6eTxymO/">
                 <h3 class="post-title">
-                  Effective C++ 笔记（03）
+                  Effective Modern C++ 笔记（05）
                 </h3>
               </a>
             </div>

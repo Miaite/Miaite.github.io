@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" >
 
-<title>Effective C++ 笔记（04） | A Blog of Miaite</title>
+<title>Effective Modern C++ 笔记（04） | A Blog of Miaite</title>
 <meta name="description" content="一些流水账，技术笔记为主">
 
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
@@ -81,9 +81,9 @@
       <div class="sm-12 md-8 col">
         <div class="paper">
           <article class="article">
-            <h1>Effective C++ 笔记（04）</h1>
+            <h1>Effective Modern C++ 笔记（04）</h1>
             <p class="article-meta">
-              2020-11-10
+              2021-05-21
               
                 <a href="https://Miaite.github.io/tag/U4pTdc1co/" class="badge secondary">
                   C++从入门到入坟
@@ -91,58 +91,52 @@
               
             </p>
             
-              <img src="https://img3.doubanio.com/view/subject/l/public/s4647091.jpg" alt="Effective C++ 笔记（04）">
+              <img src="https://upload-images.jianshu.io/upload_images/5181399-a7f086c0aefa24cd.jpg?imageMogr2/auto-orient/strip|imageView2/2/w/1080/format/webp" alt="Effective Modern C++ 笔记（04）">
             
             <div class="post-content">
-              <p>本篇笔记包含 Term 18~25。</p>
+              <p>本篇笔记包含 Term 23~30。</p>
 <!-- more -->
-<h2 id="term-18让接口容易被正确使用不易被误用">Term 18：让接口容易被正确使用，不易被误用</h2>
-<p>这一点其实比较难做到，可以参考这几个方面：</p>
+<h2 id="term-23理解-stdmove-和-stdforward">Term 23：理解 std::move 和 std::forward</h2>
 <ol>
-<li>接口的一致性，与内置类型（包括 STL）的行为兼容</li>
-<li>防止误用包括建立新类型、限制类型上的操作、束缚对象的值以及自动管理资源</li>
-<li>shared_ptr 支持定制型 deleter，可以防范 DLL 问题，可用来自动解除互斥锁</li>
+<li><code>std::move</code> 实施的是强制转换到右值型别</li>
+<li>仅当传入的实参被绑定到右值时，<code>std::forward</code> 实施强制转换到右值型别</li>
+<li><code>std::move</code> 和 <code>std::forward</code> 在运行期不做任何操作</li>
 </ol>
-<h2 id="term-19设计-class-犹如设计-type">Term 19：设计 class 犹如设计 type</h2>
-<p>在 C++ 中，设计一个通用的 class 就是设计一个新的类型，需要考虑以下一些方面：</p>
+<h2 id="term-24区分万能引用和右值引用">Term 24：区分万能引用和右值引用</h2>
 <ol>
-<li>新 type 的对象应该如何被创建和销毁？</li>
-<li>对象的初始化和对象的赋值该有什么样的差别？调用不同的函数</li>
-<li>新 type 的对象如果被 passed by value，意味着什么？会调用 copy 构造函数</li>
-<li>什么是新 type 的合法值？</li>
-<li>你的新 type 需要配合某个继承图系吗？继承自某个 class 或者允许被继承有不同的设计要点</li>
-<li>你的新 type 需要什么样的转换？考虑是否需要在不同的 class 对象之间转换，设计显式/隐式转换</li>
-<li>什么样的操作符和函数对此新 type 而言是合理的？</li>
-<li>什么样的标准函数应该驳回？禁用编译器自动生成的函数</li>
-<li>谁该取用新 type 的成员？考虑如何设置 public/protect/private 成员以及 friends</li>
-<li>什么是新 type 的 undeclared interface？</li>
-<li>你的新 type 有多么一般化？考虑定义一个新的 class template</li>
-<li>你真的需要一个新 type 吗？也许通过多个函数或者 template 就能达到需要</li>
+<li>如果函数模板形参是 <code>T&amp;&amp;</code> 形式（包括 <code>auto&amp;&amp;</code>），并且 T 依赖于型别推导，则为万能引用</li>
+<li>如果 <code>T&amp;&amp;</code> 形式不依赖型别推导，则为右值引用</li>
+<li>如果使用右值初始化万能引用，得到一个右值引用；使用左值初始化万能引用，则得到一个左值引用</li>
 </ol>
-<h2 id="term-20宁以-pass-by-reference-const-替换-pass-by-value">Term 20：宁以 pass-by-reference-const 替换 pass-by-value</h2>
-<p>C++ 默认以 value 形式进行传递，这会带来大量的复制消耗，而且可能造成对象切割（slicing）问题。以 reference 传递会高效很多。但也有例外，内置类型、STL 迭代器以及函数对象以 value 传递更加合适。</p>
-<h2 id="term-21必须返回对象时别妄想返回器-reference">Term 21：必须返回对象时，别妄想返回器 reference</h2>
-<p>返回 pointer/reference 指向 local 对象是错误行为，指向 local static 也是愚蠢的行为（但可行），reference 指向 heap-allocated 对象会内存泄漏。</p>
-<h2 id="term-22将成员变量声明为-private">Term 22：将成员变量声明为 private</h2>
-<p>简单来说，就是为了提高 class 的封装性</p>
-<h2 id="term-23宁以-non-menber-non-friend-替换-member-函数">Term 23：宁以 non-menber、non-friend 替换 member 函数</h2>
-<p>这样既可以增加 class 的封装性，也可以让函数更容易扩充。</p>
-<h2 id="term-24若所有参数皆需类型转换请为此采用-non-menber-函数">Term 24：若所有参数皆需类型转换，请为此采用 non-menber 函数</h2>
-<p>采用 non-menber 函数可以进行合适的隐式类型转换。</p>
-<h2 id="term-25考虑写出一个不抛出异常的-swap-函数">Term 25：考虑写出一个不抛出异常的 swap 函数</h2>
-<p>STL 中默认的 swap 函数会调用 copy 构造函数和 copy 赋值运算符，在某些情况下带来不必要的性能损耗。可以考虑的改写思路：</p>
+<h2 id="term-25针对右值引用实施-stdmove针对万能引用实施-stdforward">Term 25：针对右值引用实施 std::move，针对万能引用实施 std::forward</h2>
 <ol>
-<li>添加一个用于 swap 的 public member 函数（不能抛出异常）</li>
-<li>在 class 或者 template 的命名空间提供一个 non-member 函数 swap，用这个函数调用 1. 中的 member 函数 swap。这点可适用于 class template</li>
-<li>特化 std::swap 来调用 member 函数 swap</li>
-<li>用户使用 swap 时应当使用 <code>using std::swap;</code></li>
+<li>针对右值引用的最后一次实施 <code>std::move</code>，针对万能引用的最后一次实施 <code>std::forward</code></li>
+<li>作为按值返回的函数的右值引用和万能引用，依照 1. 中规则</li>
+<li>如果按值返回局部对象，可能适用于返回值优化，不要使用 <code>std::move</code> 或者 <code>std::forward</code></li>
 </ol>
-<pre><code class="language-c++">template&lt;typename T&gt;
-void doSomething(T&amp; obj1, T&amp; obj2){
-    using std::swap;    // 让 std::swap 在此函数内可见
-    swap(obj1, obj2);    // 自动选择最佳的 swap 版本
-}
+<h2 id="term-26避免依万能引用型别进行重载">Term 26：避免依万能引用型别进行重载</h2>
+<p>万能引用型别的重载函数会精确匹配一些程序员并无意图匹配的类型，应当谨慎使用，完美转发构造函数的问题更多。</p>
+<h2 id="term-27熟悉依万能引用型别进行重载的替代方案">Term 27：熟悉依万能引用型别进行重载的替代方案</h2>
+<p>使用 <code>std::enable_if</code> 对模板施加限制，就可以将万能引用和重载一起使用，不过这种技术控制了编译器可以调用到接受万能引用的重载版本的条件。万能引用在性能方面有优势，但是良好的代码编写令人头疼，一个例子：</p>
+<pre><code class="language-c++">class Person {
+ public:
+  template &lt;typename T,
+            typename = std::enable_if_t&lt;    // 条件判断
+                !std::is_base_of&lt;Person, std::decay_t&lt;T&gt;&gt;::value &amp;&amp;  // 移除修饰词和引用特性，判断是否为 Person 的派生类
+                !std::is_integral&lt;std::remove_reference_t&lt;T&gt;&gt;::value&gt;&gt;  // 移除类型的引用，判断是否为整型
+  explicit Person(T&amp;&amp; n) : name(std::forward&lt;T&gt;(n)) {} // 接受 std::string 型别以及可以强制转换到 std::string 型别的实参的构造函数
+  explicit Person(int idx) : name(nameFromIdx(idx)) {} // 接受整形实参的构造函数
+  // copy 和 move 构造函数等
+ private:
+  std::string name;
+};
 </code></pre>
+<h2 id="term-28理解引用折叠">Term 28：理解引用折叠</h2>
+<p>引用折叠的规则：形参和实参都是引用类型时，只有两者都为右值引用，最终的参数类型才是右值引用，否者为左值引用。引用折叠可能出现在四种情况下：模板实例化、<code>auto</code> 型别生成、使用 <code>typedef</code> 和别名声明出现双重引用、<code>decaltype</code>。</p>
+<h2 id="term-29假定移动操作不存在-成本高-未使用">Term 29：假定移动操作不存在、成本高、未使用</h2>
+<p>在未知是否支持移动语义的情况下（比如编写模板），使用复制操作</p>
+<h2 id="term-30熟悉完美转发的失败情形">Term 30：熟悉完美转发的失败情形</h2>
+<p>完美转发失败是由于模板类型不能成功推导，或者结果错误，涉及的情形有：大括号初始物、以 0 或 NULL 表达的空指针、仅有声明的整形 <code>static const</code>  成员变量、模板或者重载的函数名字、位域</p>
 
             </div>
           </article>
@@ -153,9 +147,9 @@ void doSomething(T&amp; obj1, T&amp; obj2){
               <div class="next">
                 下一篇
               </div>
-              <a href="https://Miaite.github.io/post/386I6Xacv/">
+              <a href="https://Miaite.github.io/post/b8qoOdiHK/">
                 <h3 class="post-title">
-                  Effective C++ 笔记（03）
+                  Effective Modern C++ 笔记（03）
                 </h3>
               </a>
             </div>
@@ -286,11 +280,11 @@ void doSomething(T&amp; obj1, T&amp; obj2){
     </div>
     <div class="row">
       
-        <a href="https://Miaite.github.io/tag/U4pTdc1co/" class="badge warning">
+        <a href="https://Miaite.github.io/tag/U4pTdc1co/" class="badge ">
           C++从入门到入坟
         </a>
       
-        <a href="https://Miaite.github.io/tag/Ardgjj5BS/" class="badge ">
+        <a href="https://Miaite.github.io/tag/Ardgjj5BS/" class="badge success">
           算法
         </a>
       

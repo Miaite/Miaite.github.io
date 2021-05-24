@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" >
 
-<title>Effective C++ 笔记（08） | A Blog of Miaite</title>
+<title>Effective Modern C++ 笔记（02） | A Blog of Miaite</title>
 <meta name="description" content="一些流水账，技术笔记为主">
 
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
@@ -81,9 +81,9 @@
       <div class="sm-12 md-8 col">
         <div class="paper">
           <article class="article">
-            <h1>Effective C++ 笔记（08）</h1>
+            <h1>Effective Modern C++ 笔记（02）</h1>
             <p class="article-meta">
-              2020-11-19
+              2021-05-19
               
                 <a href="https://Miaite.github.io/tag/U4pTdc1co/" class="badge success">
                   C++从入门到入坟
@@ -91,79 +91,63 @@
               
             </p>
             
-              <img src="https://img3.doubanio.com/view/subject/l/public/s4647091.jpg" alt="Effective C++ 笔记（08）">
+              <img src="https://upload-images.jianshu.io/upload_images/5181399-a7f086c0aefa24cd.jpg?imageMogr2/auto-orient/strip|imageView2/2/w/1080/format/webp" alt="Effective Modern C++ 笔记（02）">
             
             <div class="post-content">
-              <p>本篇笔记包含 Term 49~55。</p>
+              <p>本篇笔记包含 Term 07~17。</p>
 <!-- more -->
-<h2 id="term-49了解-new-handler-的行为">Term 49：了解 new-handler 的行为</h2>
-<p>当 operator new 无法满足内存分配需求时，会抛出异常，且在此之前，会先调用用户设置的错误处理函数（即 new-handler）。通过 <code>std::set_new_handler</code> 可以设置 new-handler，要使其设计良好，需要满足以下条件：</p>
+<h2 id="term-07在创建对象时注意区分-和">Term 07：在创建对象时注意区分 () 和 {}</h2>
+<p>在 Term 2 中，我们了解到 <code>{val...}</code> 实际是 <code>std::initializer_list&lt;T&gt;</code> 类型，使用 <code>{}</code> 初始化需要注意：</p>
 <ol>
-<li>让更多内存可被使用</li>
-<li>安装另一个 new-handler：设置调用另一个可能解决问题的 new-handler</li>
-<li>卸除 new-handler：将 null 指针传给 set_new_handler。没有安装 new-handler 时 operator new 分配失败抛出异常</li>
-<li>不返回：通常调用 abort 或 exit</li>
+<li>阻止隐式窄化型别转换</li>
+<li><code>Foo f{};</code> 会调用 class Foo 的无参构造函数</li>
+<li>如果一个类实现了 <code>std::initializer_list&lt;T&gt;</code> 为参数的构造函数，则除了 2. 之外，所有使用 <code>{}</code> 的情况都会最优先调用这个构造函数，因此除了明确调用 <code>std::initializer_list&lt;T&gt;</code> 为参数的构造函数的时候，其它情况都应该使用 <code>()</code></li>
+<li><code>Foo f({});</code> 或者 <code>Foo f{{}};</code> 会调用 <code>std::initializer_list&lt;T&gt;</code> 为参数的构造函数，实参为空的 <code>std::initializer_list&lt;T&gt;</code></li>
+<li>非静态成员变量不能使用 <code>()</code>，不可复制对象不能使用 <code>=</code> 操作符</li>
 </ol>
-<p>C++ 没有直接为 class 定制 new-handler 的语法，但我们仍然可以办到：</p>
-<pre><code class="language-c++">template &lt;typename T&gt;
-class NewHandlerSupport {  // mixin 风格的 base class，用以支持 class 专属的 set_new_handler
- public:
-  static std::new_handler set_new_handler(std::new_handler) throw();
-  static void* operator new(std::size_t size) throw(std::bad_alloc);
-
- private:
-  static std::new_handler currentHandler;
-};
-template &lt;typename T&gt;
-std::new_handler NewHandlerSupport&lt;T&gt;::set_new_handler(std::new_handler p) throw() {
-  std::new_handler oldHandler = currentHandler;
-  currentHandler = p;
-  return oldHandler;
+<h2 id="term-08优先选用-nullptr而非-0-或者-null">Term 08：优先选用 nullptr，而非 0 或者 NULL</h2>
+<p>使用 <code>nullptr</code> 表示空指针（任意类型指针），可以避免 0 或 NULL 错误调用 int 类型的重载</p>
+<h2 id="term-09优先选用别名声明而非-typedef">Term 09：优先选用别名声明，而非 typedef</h2>
+<p>使用别名声明，在函数指针上有优势，并且别名声明支持模板化，而 <code>typedef</code> 不支持。可以通过构造一个模板结构体/类，内嵌 <code>typedef</code> 声明变量来达到类似效果，但是比较繁琐。</p>
+<pre><code class="language-c++">// using 写法
+template&lt;typename T&gt;
+using MyAllocList = std::list&lt;T, MyAlloc&lt;T&gt;&gt;;
+MyAllocList&lt;Widget&gt; lw;
+// typedef 写法
+template&lt;typename T&gt;
+struct MyAllocList {
+    typedef std::list&lt;T, MyAlloc&lt;T&gt;&gt; type;
 }
-template &lt;typename T&gt;
-void* NewHandlerSupport&lt;T&gt;::operator new(std::size_t size) throw(std::bad_alloc) {
-  NewHandlerSupport h(std::set_new_handler(currentHandler));
-  return ::operator new(size);
-}
-template &lt;typename T&gt;
-std::new_handler NewHandlerSupport&lt;T&gt;::currentHandler = 0;  // 将 currentHandler 初始化为 null
-// 使用方式如下
-class Widget: public NewHandlerSupport&lt;Widget&gt; { ... } // 以自身类型继承这样一个模板类就足够
+MyAllocList&lt;Widget&gt;::type lw;
 </code></pre>
-<h2 id="term-50了解-new-和-delete-的合理替换时机">Term 50：了解 new 和 delete 的合理替换时机</h2>
-<p>使用自定义的 operator new 和 operator delete 的合理使用场景：</p>
+<h2 id="term-10优先选用限定作用域的枚举型别而非不限作用域的枚举型别">Term 10：优先选用限定作用域的枚举型别，而非不限作用域的枚举型别</h2>
+<p>不限作用域的枚举型别，变量作用域是在外层，造成污染，使用限定作用域的枚举型别（<code>enum class</code>）可以避免这一情况。限定作用域的枚举型别需要强制类型转换，默认的底层类型是 int，可在声明式指定类型。</p>
+<h2 id="term-11优先选用删除函数而非-private-未定义函数">Term 11：优先选用删除函数，而非 private 未定义函数</h2>
+<p>当我们需要禁止编译器编写某个默认的类成员函数时（例如 copy 构造函数），我们可以使用 <code>Foo(const Foo&amp;) = delete</code> 告知编译器禁止生成该成员函数。除了成员函数之外，我们还可以声明其它函数为删除函数，用以避免隐式转换或者时处理特殊边界情况。</p>
+<h2 id="term-12为意在改写的函数添加-override-声明">Term 12：为意在改写的函数添加 override 声明</h2>
+<p>注意 overload 和 override 的区别 ，当我们意图 override 一个虚函数时，应该使用 <code>override</code> 让编译器检查这是否是合法的 override 行为。</p>
+<h2 id="term-13优先选用-const_iterator而非-iterator">Term 13：优先选用 const_iterator，而非 iterator</h2>
 <ol>
-<li>用来检测运用错误</li>
-<li>收集动态分配内存的统计数据</li>
-<li>增加分配和归还的速度</li>
-<li>降低默认内存管理器带来的额外开销</li>
-<li>实现内存地址对齐（alignment）</li>
-<li>将相关的对象成簇集中，降低缺页中断的概率，因为它们很可能同时被调用</li>
-<li>实现一些特定行为，例如在归还内存时将内容抹除</li>
+<li>优先选用 const_iterator，而非 iterator</li>
+<li>优先选用非成员函数版本的 begin/cbegin 等，而非成员函数版本</li>
 </ol>
-<h2 id="term-51编写-new-和-delete-时需固守常规">Term 51：编写 new 和 delete 时需固守常规</h2>
-<p>operator new 分配成功时返回指针，不成功则调用 new-handler，可能会再尝试分配，所有的 new-handler 失败，则抛出 bad_alloc 异常。在设计自定义的 operator new 和 operator delete 过程中，需要注意：</p>
+<h2 id="term-14只要函数不会发射异常就为其加上-noexcept-声明">Term 14：只要函数不会发射异常，就为其加上 noexcept 声明</h2>
+<p>添加 noexcept 声明使得编译器能更好地优化。</p>
+<h2 id="term-15只要有可能使用-constexpr就使用它">Term 15：只要有可能使用 constexpr，就使用它</h2>
 <ol>
-<li>即使请求的是 0 byte， operator new 也要返回一个合法的指针，则可以简单地将 0 视为 1</li>
-<li>operator new 应该内含无穷循环来实现上面那段话</li>
-<li>class 专属版本的 operator new 应该处理错误大小的分配请求，比如被派生类继承之后，对派生类使用（基类的） new 会造成大小错误</li>
-<li>operator delete 应该在收到 null 指针时不做任何事</li>
-<li>class 专属版本的 operator delete 应该处理错误大小的分配请求</li>
+<li><code>constexpr</code> 对象具备 const 属性，并切在编译期就已经知道其值</li>
+<li>如果 <code>constexpr</code> 函数传入地实参是编译期已知的值，那么其结果会在编译期计算得出，否则退化为普通函数</li>
 </ol>
-<h2 id="term-52写了-placement-new-也要写-placement-delete">Term 52：写了 placement new 也要写 placement delete</h2>
+<h2 id="term-16保证-const-成员函数的线程安全">Term 16：保证 const 成员函数的线程安全</h2>
+<p>通常来说，只读属性是线程安全的。const 成员函数可以保证对象本身不变（除了 mutable 属性），但是 mutable 属性可能造成在读取成员属性时线程不安全（比如实现了缓存）。我们需要编写线程安全的代码避免这种情况。</p>
+<h2 id="term-17理解特种成员函数的生成机制">Term 17：理解特种成员函数的生成机制</h2>
 <ol>
-<li>编写了 placement new 也要写 placement delete，否则可能会造成内存泄漏</li>
-<li>声明  placement new 和 placement delete 时，要注意不要遮蔽了它们的正常版本</li>
+<li>当我们没有为类编写特种成员函数，而代码中使用到了，编译器会自动替我们生成。他们包括：默认构造函数、析构函数、复制构造函数、复制赋值运算符、移动构造函数和移动赋值运算符</li>
+<li>移动操作仅当类中没有显式声明复制操作、析构函数、移动操作时才会自动生成</li>
+<li>复制构造函数、复制赋值运算符和析构函数，三者应该同时自定义或者同时都不自定义</li>
+<li>使用 <code>=delete</code> 和 <code>=default</code> 声明特种成员函数是使代码更加明确的做法</li>
+<li>成员函数模板不会抑制特种成员函数的生成</li>
 </ol>
-<h2 id="term-53不要轻忽编译器的警告">Term 53：不要轻忽编译器的警告</h2>
-<ol>
-<li>认真考虑编译器的警告</li>
-<li>不同编译器针对相同代码的警告处理可能不一样</li>
-</ol>
-<h2 id="term-54让自己熟悉包括-tr1-在内的标准程序库">Term 54：让自己熟悉包括 TR1 在内的标准程序库</h2>
-<p>如题。</p>
-<h2 id="term-55让自己熟悉-boost">Term 55：让自己熟悉 Boost</h2>
-<p>在 Modern C++ 的时代，Boost 的应用意义已经不如从前。但在熟悉标准程序库之后，Boost 仍是很好的学习对象，它包含了可能在未来会纳入标准程序库的一些东西。</p>
 
             </div>
           </article>
@@ -174,9 +158,9 @@ class Widget: public NewHandlerSupport&lt;Widget&gt; { ... } // 以自身类型�
               <div class="next">
                 下一篇
               </div>
-              <a href="https://Miaite.github.io/post/sF-ehhx1o/">
+              <a href="https://Miaite.github.io/post/zawrgbFMU/">
                 <h3 class="post-title">
-                  Effective C++ 笔记（07）
+                  Effective Modern C++ 笔记（01）
                 </h3>
               </a>
             </div>
@@ -307,11 +291,11 @@ class Widget: public NewHandlerSupport&lt;Widget&gt; { ... } // 以自身类型�
     </div>
     <div class="row">
       
-        <a href="https://Miaite.github.io/tag/U4pTdc1co/" class="badge warning">
+        <a href="https://Miaite.github.io/tag/U4pTdc1co/" class="badge success">
           C++从入门到入坟
         </a>
       
-        <a href="https://Miaite.github.io/tag/Ardgjj5BS/" class="badge secondary">
+        <a href="https://Miaite.github.io/tag/Ardgjj5BS/" class="badge warning">
           算法
         </a>
       

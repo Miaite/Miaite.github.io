@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" >
 
-<title>Effective C++ 笔记（04） | A Blog of Miaite</title>
+<title>Effective Modern C++ 笔记（03） | A Blog of Miaite</title>
 <meta name="description" content="一些流水账，技术笔记为主">
 
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
@@ -81,9 +81,9 @@
       <div class="sm-12 md-8 col">
         <div class="paper">
           <article class="article">
-            <h1>Effective C++ 笔记（04）</h1>
+            <h1>Effective Modern C++ 笔记（03）</h1>
             <p class="article-meta">
-              2020-11-10
+              2021-05-20
               
                 <a href="https://Miaite.github.io/tag/U4pTdc1co/" class="badge secondary">
                   C++从入门到入坟
@@ -91,58 +91,37 @@
               
             </p>
             
-              <img src="https://img3.doubanio.com/view/subject/l/public/s4647091.jpg" alt="Effective C++ 笔记（04）">
+              <img src="https://upload-images.jianshu.io/upload_images/5181399-a7f086c0aefa24cd.jpg?imageMogr2/auto-orient/strip|imageView2/2/w/1080/format/webp" alt="Effective Modern C++ 笔记（03）">
             
             <div class="post-content">
-              <p>本篇笔记包含 Term 18~25。</p>
+              <p>本篇笔记包含 Term 18~22。</p>
 <!-- more -->
-<h2 id="term-18让接口容易被正确使用不易被误用">Term 18：让接口容易被正确使用，不易被误用</h2>
-<p>这一点其实比较难做到，可以参考这几个方面：</p>
+<h2 id="term-18使用-stdunique_ptr-管理具备专属所有权的资源">Term 18：使用 std::unique_ptr 管理具备专属所有权的资源</h2>
 <ol>
-<li>接口的一致性，与内置类型（包括 STL）的行为兼容</li>
-<li>防止误用包括建立新类型、限制类型上的操作、束缚对象的值以及自动管理资源</li>
-<li>shared_ptr 支持定制型 deleter，可以防范 DLL 问题，可用来自动解除互斥锁</li>
+<li><code>std::unique_ptr</code> 是只移类型的智能指针，对托管资源有专属所有权</li>
+<li>默认采用 delete 析构资源，也可以使用自定义函数作为删除器（通常是 lambda 函数），使用带状态的 lambda 函数或者函数指针作为删除器会增加智能指针对象大小</li>
+<li><code>std::unique_ptr</code> 容易转换为 <code>std::shared_ptr</code></li>
 </ol>
-<h2 id="term-19设计-class-犹如设计-type">Term 19：设计 class 犹如设计 type</h2>
-<p>在 C++ 中，设计一个通用的 class 就是设计一个新的类型，需要考虑以下一些方面：</p>
+<h2 id="term-19使用-stdshared_ptr-管理具备共享所有权的资源">Term 19：使用 std::shared_ptr 管理具备共享所有权的资源</h2>
 <ol>
-<li>新 type 的对象应该如何被创建和销毁？</li>
-<li>对象的初始化和对象的赋值该有什么样的差别？调用不同的函数</li>
-<li>新 type 的对象如果被 passed by value，意味着什么？会调用 copy 构造函数</li>
-<li>什么是新 type 的合法值？</li>
-<li>你的新 type 需要配合某个继承图系吗？继承自某个 class 或者允许被继承有不同的设计要点</li>
-<li>你的新 type 需要什么样的转换？考虑是否需要在不同的 class 对象之间转换，设计显式/隐式转换</li>
-<li>什么样的操作符和函数对此新 type 而言是合理的？</li>
-<li>什么样的标准函数应该驳回？禁用编译器自动生成的函数</li>
-<li>谁该取用新 type 的成员？考虑如何设置 public/protect/private 成员以及 friends</li>
-<li>什么是新 type 的 undeclared interface？</li>
-<li>你的新 type 有多么一般化？考虑定义一个新的 class template</li>
-<li>你真的需要一个新 type 吗？也许通过多个函数或者 template 就能达到需要</li>
+<li><code>std::shared_ptr</code> 可复制可移动，计数管理</li>
+<li><code>std::shared_ptr</code> 大小是裸指针的两倍，使用动态分配的控制块来管理，计数操作必须是原子性的</li>
+<li>默认采用 delete 析构资源，也可以使用自定义函数作为删除器，删除器型别与 <code>std::shared_ptr</code> 型别无关</li>
+<li>避免使用裸指针创建 <code>std::shared_ptr</code>，会创建多余的控制块，析构时出错</li>
 </ol>
-<h2 id="term-20宁以-pass-by-reference-const-替换-pass-by-value">Term 20：宁以 pass-by-reference-const 替换 pass-by-value</h2>
-<p>C++ 默认以 value 形式进行传递，这会带来大量的复制消耗，而且可能造成对象切割（slicing）问题。以 reference 传递会高效很多。但也有例外，内置类型、STL 迭代器以及函数对象以 value 传递更加合适。</p>
-<h2 id="term-21必须返回对象时别妄想返回器-reference">Term 21：必须返回对象时，别妄想返回器 reference</h2>
-<p>返回 pointer/reference 指向 local 对象是错误行为，指向 local static 也是愚蠢的行为（但可行），reference 指向 heap-allocated 对象会内存泄漏。</p>
-<h2 id="term-22将成员变量声明为-private">Term 22：将成员变量声明为 private</h2>
-<p>简单来说，就是为了提高 class 的封装性</p>
-<h2 id="term-23宁以-non-menber-non-friend-替换-member-函数">Term 23：宁以 non-menber、non-friend 替换 member 函数</h2>
-<p>这样既可以增加 class 的封装性，也可以让函数更容易扩充。</p>
-<h2 id="term-24若所有参数皆需类型转换请为此采用-non-menber-函数">Term 24：若所有参数皆需类型转换，请为此采用 non-menber 函数</h2>
-<p>采用 non-menber 函数可以进行合适的隐式类型转换。</p>
-<h2 id="term-25考虑写出一个不抛出异常的-swap-函数">Term 25：考虑写出一个不抛出异常的 swap 函数</h2>
-<p>STL 中默认的 swap 函数会调用 copy 构造函数和 copy 赋值运算符，在某些情况下带来不必要的性能损耗。可以考虑的改写思路：</p>
+<h2 id="term-20对于类似-stdshared_ptr-但有可能空悬的指针使用-stdweak_ptr">Term 20：对于类似 std::shared_ptr 但有可能空悬的指针使用 std::weak_ptr</h2>
 <ol>
-<li>添加一个用于 swap 的 public member 函数（不能抛出异常）</li>
-<li>在 class 或者 template 的命名空间提供一个 non-member 函数 swap，用这个函数调用 1. 中的 member 函数 swap。这点可适用于 class template</li>
-<li>特化 std::swap 来调用 member 函数 swap</li>
-<li>用户使用 swap 时应当使用 <code>using std::swap;</code></li>
+<li>使用 <code>std::weak_ptr</code> 代替可能空悬的 <code>std::shared_ptr</code>，<code>std::weak_ptr::lock</code> 返回一个 <code>std::shared_ptr</code>，若空悬其为空</li>
+<li>可能会使用 <code>std::weak_ptr</code> 的场景：缓存，观察者列表，避免 <code>std::shared_ptr</code> 指针环路</li>
 </ol>
-<pre><code class="language-c++">template&lt;typename T&gt;
-void doSomething(T&amp; obj1, T&amp; obj2){
-    using std::swap;    // 让 std::swap 在此函数内可见
-    swap(obj1, obj2);    // 自动选择最佳的 swap 版本
-}
-</code></pre>
+<h2 id="term-21优先选用-stdmake_unique-和-stdmake_shared而非直接使用-new">Term 21：优先选用 std::make_unique 和 std::make_shared，而非直接使用 new</h2>
+<ol>
+<li>相比于直接使用 new，make 系列函数代码简短，且异常安全，并且 <code>std::make_shared</code> 和 <code>std::allocated_shared</code> 生成的目标码更优</li>
+<li>不适于使用 make 系列函数的场景包括需要定制删除器，以及期望直接传递大括号初始化物</li>
+<li>对于 <code>std::shared_ptr</code>，不建议使用 make 系列函数的额外场景有：自定义内存管理的类；内存紧张的系统，非常大的对象，以及存在比 <code>std::shared_ptr</code> 生存期更久的 <code>std::weak_ptr</code></li>
+</ol>
+<h2 id="term-22pimpl-习惯用法时将特殊成员函数的定义放到实现文件中">Term 22：Pimpl 习惯用法时，将特殊成员函数的定义放到实现文件中</h2>
+<p>对于采用 <code>std::unique_ptr</code> 来实现的 pImpl 指针，需要在头文件中声明特种成员函数，但是在实现文件中实现他们（使用 <code>=default</code> 也可以）</p>
 
             </div>
           </article>
@@ -153,9 +132,9 @@ void doSomething(T&amp; obj1, T&amp; obj2){
               <div class="next">
                 下一篇
               </div>
-              <a href="https://Miaite.github.io/post/386I6Xacv/">
+              <a href="https://Miaite.github.io/post/y4q9kT2zz/">
                 <h3 class="post-title">
-                  Effective C++ 笔记（03）
+                  Effective Modern C++ 笔记（02）
                 </h3>
               </a>
             </div>
@@ -286,11 +265,11 @@ void doSomething(T&amp; obj1, T&amp; obj2){
     </div>
     <div class="row">
       
-        <a href="https://Miaite.github.io/tag/U4pTdc1co/" class="badge warning">
+        <a href="https://Miaite.github.io/tag/U4pTdc1co/" class="badge ">
           C++从入门到入坟
         </a>
       
-        <a href="https://Miaite.github.io/tag/Ardgjj5BS/" class="badge ">
+        <a href="https://Miaite.github.io/tag/Ardgjj5BS/" class="badge secondary">
           算法
         </a>
       
