@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://Miaite.github.io</id>
     <title>A Blog of Miaite</title>
-    <updated>2021-05-24T04:47:05.539Z</updated>
+    <updated>2021-06-09T13:12:48.524Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://Miaite.github.io"/>
     <link rel="self" href="https://Miaite.github.io/atom.xml"/>
@@ -16,9 +16,9 @@
         <link href="https://Miaite.github.io/post/rwAwSHvq2/">
         </link>
         <updated>2021-05-23T04:52:25.000Z</updated>
-        <summary type="html"><![CDATA[<p>本篇笔记包含 Term 35~。</p>
+        <summary type="html"><![CDATA[<p>本篇笔记包含 Term 35~42。</p>
 ]]></summary>
-        <content type="html"><![CDATA[<p>本篇笔记包含 Term 35~。</p>
+        <content type="html"><![CDATA[<p>本篇笔记包含 Term 35~42。</p>
 <!-- more -->
 <h2 id="term-35优先选用基于任务而非基于线程的程序设计">Term 35：优先选用基于任务而非基于线程的程序设计</h2>
 <ol>
