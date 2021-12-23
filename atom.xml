@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://Miaite.github.io</id>
     <title>A Blog of Miaite</title>
-    <updated>2021-09-15T06:31:31.017Z</updated>
+    <updated>2021-12-23T02:52:12.985Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://Miaite.github.io"/>
     <link rel="self" href="https://Miaite.github.io/atom.xml"/>
@@ -10,6 +10,95 @@
     <logo>https://Miaite.github.io/images/avatar.png</logo>
     <icon>https://Miaite.github.io/favicon.ico</icon>
     <rights>All rights reserved 2021, A Blog of Miaite</rights>
+    <entry>
+        <title type="html"><![CDATA[2021 后端开发秋招总结]]></title>
+        <id>https://Miaite.github.io/post/k0VH9clEu/</id>
+        <link href="https://Miaite.github.io/post/k0VH9clEu/">
+        </link>
+        <updated>2021-12-23T02:41:54.000Z</updated>
+        <summary type="html"><![CDATA[<p>菜鸡的秋招之路。</p>
+]]></summary>
+        <content type="html"><![CDATA[<p>菜鸡的秋招之路。</p>
+<!-- more -->
+<h1 id="个人背景">个人背景</h1>
+<p>末流 211 GIS 本，末流 985 CS 硕，在实验室做的课题是图像处理/深度学习。导师放养，但是不让实习，研二的时候论文还没进展，就放弃学术准备就业了。AI 算法岗肯定是不行的，没有好 paper，就打算做后端开发了，把 C++ 重新捡了起来，并且速成了一下 Go（因为个人不喜欢 Java，不然直接 Java 一把梭也不错）。地点是倾向于成都，但是大厂根本没机会，都是直接转到其他地方的部门面试，只有美团面了一次成都的岗。</p>
+<h1 id="前期准备">前期准备</h1>
+<p>导师说了不放实习，一开始也没准备春招找暑期实习。3月的时候，室友 X 开始准备暑期实习，并推荐我先准备准备不能去再说，就赶鸭子上架投了两三家大厂，面了四五场，然后被暴打（这里其实有个坑，后面再说）。</p>
+<p>意识到自己的菜鸡本质之后，就安心抽时间准备秋招了。大体上就三个方面：1）刷题，剑指 offer + leetcode Top100 + <a href="https://leetcode-solution-leetcode-pp.gitbook.io/leetcode-solution/">力扣加加</a> 顺着顺序刷了一些，再加上少许 SQL 题，总计 300 上下。我刷题能力不强，准备到这个程度，应付常规的题问题不大。2）八股，计算机网络，操作系统，数据库（主要是 MySQL 知识点），编程语言基础，Linux 系统编程等等。3）项目经验，我找了两个别人的开源项目，自己写了一遍，有些地方稍微改进了一下，不改也问题不大，但是要把里面涉及到的东西理解到位，面试肯定会重点问。在实验室的课题也会被问道，主要是看表达和思路，毕竟面试官基本不懂这方面的细节。</p>
+<p>我的简历很普通，没有实习，没有相关领域论文，没有有含金量的奖项，导致后面很多厂直接不给面试机会😥。还好学历还算过关，笔试一般也能过关，大厂还能给个机会。</p>
+<p>差不多 6 月逐渐开始投简历，陆续做笔试，8月中旬开始面试，9 月收了两个满意的意向书就躺了。</p>
+<h1 id="提前批及秋招投递情况">提前批及秋招投递情况</h1>
+<p>总共投了有 40 家的样子，互联网大小厂，国企，金融，外企等等都有</p>
+<h2 id="简历挂笔试挂一直没消息的">简历挂/笔试挂/一直没消息的</h2>
+<p>TP-LINK、京东、米哈游、百度、爱奇艺、海康威视、Shein、搜狐、旷视、陌陌、网易互娱、网易雷火、网易互联网、SmartX、Zoom（让我申请转客户端）、知乎、哔哩哔哩、贝壳、快手、酷家乐、FreeWheel、Paypal</p>
+<p>点名批评 Shein、米哈游、哔哩哔哩，笔试全 A 然后挂</p>
+<h2 id="有意向书之后放弃笔试面试的">有意向书之后放弃笔试/面试的</h2>
+<p>触宝、OPPP、小米、新浪、电信天翼云、龙湖、莉莉丝、腾讯音乐、农行、搜狐（11月才约面试）</p>
+<h2 id="面试挂了的">面试挂了的</h2>
+<p>华为、携程、美团、东方财富、腾讯、Garena</p>
+<h2 id="拿到-offer-的">拿到 offer 的</h2>
+<p>招银网络科技、字节跳动、阿里巴巴、Shopee</p>
+<h3 id="招银网络科技">招银网络科技</h3>
+<h4 id="成都后端开发">成都后端开发</h4>
+<p>这家的提前批开始得非常早，6 月初面完了，6 月底发意向，9 月底开奖，10 月初逼签，面试不难，问题比较常规。</p>
+<h3 id="东方财富">东方财富</h3>
+<p>一面是 HR 面，然后挂了😅</p>
+<h3 id="携程">携程</h3>
+<h4 id="一面挂">一面挂</h4>
+<p>云计算平台的岗，先讲了实验室的课题，然后做了个最长回文子串，我写的动态规划方法，面试官不满意，说要中心扩展，我提了一下 Manacher 算法（但是不会写），另外随便问了点其它的东西，就结束了。</p>
+<h3 id="美团">美团</h3>
+<h4 id="一面挂-2">一面挂</h4>
+<p>问得不难，比较常规，基本都答上来了，感觉面试官只会 Java，我不会 Java 他有点不知道问什么。</p>
+<h4 id="被捞再次一面挂">被捞再次一面挂</h4>
+<p>乱起八糟的问了很多，不记得了，有些没答不上。</p>
+<h4 id="后面又捞了两次">后面又捞了两次</h4>
+<p>都拒了，不想面了，总结就是：不会 Java 面美团会比较难受</p>
+<h3 id="腾讯">腾讯</h3>
+<h4 id="csig-一面挂">CSIG 一面挂</h4>
+<p>问了不少很虚的技术问题，不知道怎么回答是好，比如 “C++ 有哪些泛化的方法？”</p>
+<h4 id="teg-三面挂">TEG 三面挂</h4>
+<p>一二面比较常规，八股+项目+做题，有些八股会问得比较深。三面问了一个 C++ 的隐式类型转化，答错了，后面一个场景设计题也不太答得上来，就挂了。</p>
+<h3 id="华为">华为</h3>
+<h4 id="成研所光产品主管面挂">成研所光产品，主管面挂</h4>
+<p>一二面也算常规，难度比 TEG 小，但是二面做题没做出来。主管面比较玄学，主要是性格方面的。总的来说华为性格测试很恶心。</p>
+<h3 id="字节跳动">字节跳动</h3>
+<p>杭州基础架构，offer</p>
+<h4 id="一面">一面</h4>
+<p>除了常规之外，B+树/B树/AVL/红黑树问得比较深，主要 是 MySQL 索引一起提到的，做题是 <a href="https://leetcode-cn.com/problems/reorder-list/">leetcode143</a>，我当时以为牛客网上就是白板不能运行，结果写出来有 bug…</p>
+<h4 id="二面">二面</h4>
+<p>进程、线程、内核态那一块问得比较深，问到不会为止，用户态程序是不能看到内核空间还是禁止访问内核空间。做题是求逆序对数，没写出来…</p>
+<h4 id="三面">三面</h4>
+<p>项目问得多一些，细节延申，做题是 <a href="https://leetcode-cn.com/problems/merge-intervals/">leetcode56</a>。</p>
+<p>之前暑期实习就面了字节，然后挂了，而且面评不好，导致秋招有点难捞。提前批一开始投了成都抖音，简历秒挂，找 HR 朋友转推了成都飞书，还是简历挂。隔了大半个月吧，被杭州基础架构捞了，幸运上岸，拿了第一个大厂意向书。</p>
+<h3 id="阿里巴巴">阿里巴巴</h3>
+<p>杭州阿里云，offer</p>
+<h4 id="一面-2">一面</h4>
+<p>电话面，压力很大，问得东西比较深入，比较难，不太偏八股，比较灵活，从简历上项目入手逐步引导深入。</p>
+<h4 id="二面-2">二面</h4>
+<p>电话面，和一面类似，但是轻松一些。场景算法题：数据流求中位数/最大值，求出现频率最高的 topK，前几个问题的分布式版本这套组合拳。</p>
+<h4 id="三面-2">三面</h4>
+<p>视频面，问题比较轻松常规，C++ 八股，写了个题，抽象接口设计题，有点难（以前没写过这种）。</p>
+<p>总的来说，这是面试体验最好的一家，面试官技术水平和面试水平都很高，风格和其他家也不一样，整体有种技术宅的氛围。</p>
+<h3 id="shopee">Shopee</h3>
+<p>深圳，部门未定，流程比较晚没有意向书直接发了 offer</p>
+<h4 id="深圳93-一面1012-二面都要泡化了">深圳，9.3 一面，10.12 二面，都要泡化了</h4>
+<p>面试体验很好，外企面试规范那种，感觉很尊重人，一面最后问了面试官，他说我简历没啥亮点，但是面下来感觉还挺好的。做题是 <a href="https://leetcode-cn.com/problems/binary-tree-maximum-path-sum/">leetcode124</a> 和 <a href="https://leetcode-cn.com/problems/min-stack/">leetcode155</a>。其他一个是常规八股文，另外比较喜欢问场景题，遇到某个问题可能是什么情况，有什么解决方法，比较灵活，但是也不会太难。</p>
+<h3 id="garena">Garena</h3>
+<p>上海，部门未定，流程很慢，HR 面后一直没消息，算是排序挂吧</p>
+<h4 id="一面二面">一面，二面</h4>
+<p>跟 Shopee 是一家人，面试体验也不错。做题只写了个二分，我还没写好😥……还是要基础牢靠啊，二分快排堆排归并啥的。其他都是常规的八股之类的，也有系统设计题。</p>
+<h1 id="总结">总结</h1>
+<ol>
+<li>实习经历和学历对取得面试机会很重要</li>
+<li>暑期实习不要太晚了，8月初要离职，不然影响秋招</li>
+<li>项目要和岗位相关，还要吃透</li>
+<li>题是要多刷的，这个属于小马过河，刷到什么程度看自己的情况</li>
+<li>基础知识（八股）要牢靠，常规问题都搞明白，细节越清楚越好，Linux系统编程/内核知识、分布式是加分项</li>
+<li>不要吊死在一棵树上，多拿几个 offer 才能谈个好的价格</li>
+<li>最后感谢室友 H 神带我刷笔试（Hang 神牛逼）</li>
+</ol>
+]]></content>
+    </entry>
     <entry>
         <title type="html"><![CDATA[Effective Modern C++ 笔记（06）]]></title>
         <id>https://Miaite.github.io/post/rwAwSHvq2/</id>
@@ -557,43 +646,6 @@ Foo* Foo::newFoo() { return new Foo(); }
 <p>例如 iostream 程序库具有类型安全（type-safe）特性，并且可扩充。然而在效率方面，iostream 通常表现得比 stdio 差，因为 stdio 的可执行文件通常比 iostreams更小也更快。</p>
 <h2 id="term-24了解-virtual-functions-multiple-inheritance-virtualbase-classes-runtime-type-identification的成本">Term 24：了解 virtual functions、multiple inheritance、virtualbase classes、runtime type identification的成本</h2>
 <p>当一个虚函数被调用，执行的代码必须对应于“调用者（对象）的动态类型”。对象的 pointer 或reference，其类型是无形的，编译器如何很有效率地提供这样的行为呢？大部分编译器使用所谓的 virtual tables 和 virtual table pointers——此二者常被简写为 vtbls 和 vptrs。每一个类会维护自己的 vtbls 和 vptrs，派生类不仅有自己的 vtbls 内容，还包含基类的 vtbls 内容。当继承关系变得复杂时，vptrs 会使对象的内存空间大量增加。另外，使用虚函数，inline 便会失效，因为在编译阶段无法知道要调用哪一个具体函数。</p>
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[More Effective C++ 笔记（02）]]></title>
-        <id>https://Miaite.github.io/post/A-SVzsdLw/</id>
-        <link href="https://Miaite.github.io/post/A-SVzsdLw/">
-        </link>
-        <updated>2021-04-25T06:38:46.000Z</updated>
-        <summary type="html"><![CDATA[<p>本篇笔记包含 Term 9~15。</p>
-]]></summary>
-        <content type="html"><![CDATA[<p>本篇笔记包含 Term 9~15。</p>
-<!-- more -->
-<h2 id="term-9利用-destructors-避免泄漏资源">Term 9：利用 destructors 避免泄漏资源</h2>
-<p>按照 RAII，将资源放入对象当中，通过析构函数可以保证资源被正确回收。通常情况只需要使用智能指针即可，即使发生异常也能保证不出现资源泄露。</p>
-<h2 id="term-10在-constructors-内阻止资源泄漏resource-leak">Term 10：在 constructors 内阻止资源泄漏（resource leak）</h2>
-<p>如果构造函数在执行过程中发生异常，可能会出现资源泄露，此时需要捕获异常并处理。简单来说，使用智能指针就好了。</p>
-<h2 id="term-11禁止异常exceptions流出-destructors-之外">Term 11：禁止异常（exceptions）流出 destructors 之外</h2>
-<ol>
-<li>可以避免 terminate 函数在 exception 传播过程的栈展开（stack-unwinding）机制中被调用</li>
-<li>可以协助确保 destructors 完成其应该完成的所有事情</li>
-</ol>
-<h2 id="term-12了解抛出一个-exception与传递一个参数或调用一个虚函数之间的差异">Term 12：了解“抛出一个 exception”与“传递一个参数”或“调用一个虚函数”之间的差异</h2>
-<ol>
-<li>exception objects 总是会被复制，如果以 by value 方式捕捉，它们甚至被复制两次。至于传递给函数参数的对象则不一定得复制。</li>
-<li>“被抛出成为 exceptions”的对象，其被允许的类型转换动作，比“被传递到函数去”的对象少。</li>
-<li>catch 子句以其“出现于源代码的顺序”被编译器检验比对，其中第一个匹配成功者便执行；而当我们以某对象调用一个虚函数，被选中执行的是那个“与对象类型最佳吻合”的函数，不论它是不是源代码所列的第一个。</li>
-<li>“exceptions 与 catch 子句相匹配”的过程中，仅有两种转换可以发生。第一种是“继承架构中的类转换（inheritance-based conversions）”。第二个允许发生的转换是从一个“有型指针”转为“无型指针”，所以一个针对 const void＊ 指针而设计的 catch子句，可捕捉任何指针类型的 exception。</li>
-</ol>
-<h2 id="term-13以-by-reference-方式捕捉-exceptions">Term 13：以 by reference 方式捕捉 exceptions</h2>
-<ol>
-<li>by pointer 方式捕捉不能保证指针指向有效对象，该对象可能离开作用域就被销毁</li>
-<li>by value 方式复制两次效率低下，此外它也会引起切割（slicing）问题，因为 derived class exception objects被捕捉并被视为 base classexceptions 者，将失去其派生成分</li>
-</ol>
-<h2 id="term-14明智运用-exception-specifications">Term 14：明智运用 exception specifications</h2>
-<p>exception specifications 对于“函数希望抛出什么样的 exceptions”提供了卓越的说明。而在“违反 exception specification的下场十分悲惨，以至于需要立刻结束程序”的形势下，它们提供了默认行为。但是虽然有这些好处，它们相对也有一些缺点，包括编译器只对它们做局部性检验、很容易被不经意地违反等。此外它们可能会妨碍更上层的 exception 处理函数处理未预期的 exceptions——即使更上层的处理函数已经知道该怎么做。</p>
-<h2 id="term-15了解异常处理exception-handling的成本">Term 15：了解异常处理（exception handling）的成本</h2>
-<p>异常处理需要额外的成本，需要谨慎决定使用异常处理机制。</p>
 ]]></content>
     </entry>
 </feed>
